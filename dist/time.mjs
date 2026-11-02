@@ -11,6 +11,11 @@ export function deadline(birth, years) {
   const last = new Date(y, birth.getMonth()+1, 0).getDate();
   return new Date(y, birth.getMonth(), Math.min(birth.getDate(),last));
 }
+function addCalendarMonths(date, months){
+  const first=new Date(date.getFullYear(),date.getMonth()+months,1);
+  const last=new Date(first.getFullYear(),first.getMonth()+1,0).getDate();
+  return new Date(first.getFullYear(),first.getMonth(),Math.min(date.getDate(),last),date.getHours(),date.getMinutes(),date.getSeconds(),date.getMilliseconds());
+}
 export function calculate(birthday, years, now = new Date()) {
   const birth = parseBirthday(birthday);
   if (!birth || birth > now || !Number.isInteger(years) || years < 1 || years > 120) return null;
@@ -20,11 +25,10 @@ export function calculate(birthday, years, now = new Date()) {
   let months=0;
   if(remaining>0){
     months=(end.getFullYear()-now.getFullYear())*12+end.getMonth()-now.getMonth();
-    const first=new Date(now.getFullYear(),now.getMonth()+months,1);
-    const last=new Date(first.getFullYear(),first.getMonth()+1,0).getDate();
-    const anniversary=new Date(first.getFullYear(),first.getMonth(),Math.min(now.getDate(),last),now.getHours(),now.getMinutes(),now.getSeconds(),now.getMilliseconds());
-    if(anniversary>end)months--;
+    if(addCalendarMonths(now,months)>end)months--;
     months=Math.max(0,months);
   }
-  return {birth,end,remaining,fraction,days:Math.floor(remaining/DAY),weeks:Math.floor(remaining/DAY/7),months,years:Math.floor(months/12),hours:Math.floor(remaining/3600000)%24,minutes:Math.floor(remaining/60000)%60,seconds:Math.floor(remaining/1000)%60,totalWeeks:Math.ceil((end-birth)/DAY/7),elapsedWeeks:Math.floor((now-birth)/DAY/7)};
+  const rest=remaining>0?Math.max(0,end-addCalendarMonths(now,months)):0;
+  const duration={years:Math.floor(months/12),months:months%12,days:Math.floor(rest/DAY),hours:Math.floor(rest/3600000)%24,minutes:Math.floor(rest/60000)%60,seconds:Math.floor(rest/1000)%60};
+  return {birth,end,remaining,fraction,duration,days:Math.floor(remaining/DAY),weeks:Math.floor(remaining/DAY/7),months,years:Math.floor(months/12),totalWeeks:Math.ceil((end-birth)/DAY/7),elapsedWeeks:Math.floor((now-birth)/DAY/7)};
 }

@@ -22,8 +22,10 @@ function render(){
   }
   const result=calculate(profile.birthday,profile.years);
   if(!result)return;
-  $('days').textContent=nf.format(result.days);
-  ['hours','minutes','seconds'].forEach(key=>$(key).textContent=String(result[key]).padStart(2,'0'));
+  $('countdown-years').textContent=nf.format(result.duration.years);
+  $('countdown-months').textContent=nf.format(result.duration.months);
+  $('days').textContent=nf.format(result.duration.days);
+  ['hours','minutes','seconds'].forEach(key=>$(key).textContent=String(result.duration[key]).padStart(2,'0'));
   $('demo-badge').hidden=!!state.profile;
   $('main-setup').firstChild.textContent=state.profile?'設定を変更する ':'設定する ';
   $('basis').textContent=`${dateFormat.format(result.birth)}生まれ・寿命 ${profile.years}歳で計算`;
