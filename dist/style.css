@@ -176,3 +176,7 @@ footer { justify-content: center; }
 .birthday-inputs { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 12px; margin-top: 8px; }
 .birthday-inputs label { min-width: 0; margin: 0; font-size: 12px; }
 .birthday-inputs input { margin-top: 6px; }
+
+.field-error { margin: 8px 0 0; color: #a1362a; font-size: 12px; }
+.field-error:empty { display: none; }
+.birthday-inputs input[aria-invalid='true'] { border-color: #a1362a; }

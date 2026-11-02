@@ -1,4 +1,4 @@
-const VERSION = "3df513400a86aee0";
+const VERSION = "d4bb7471f0e8290d";
 const FILES = ["index.html","style.css","app.mjs","time.mjs","share.mjs","pwa.mjs","site.webmanifest","favicon.svg","favicon.ico","apple-touch-icon.png","assets/logo-wordmark-a.png","assets/icon-192.png","assets/icon-512.png","assets/icon-maskable-512.png"];
 const SCOPE = self.registration.scope;
 const PREFIX = `life-hourglass:${SCOPE}:`;

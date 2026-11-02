@@ -9,7 +9,7 @@ const source=(await readFile(new URL('../dist/app.mjs',import.meta.url),'utf8'))
 function app(profile){
   const elements=new Map();
   const element=id=>{
-    if(!elements.has(id))elements.set(id,{value:'',textContent:'',hidden:false,checked:false,open:false,style:{},firstChild:{},events:{},classList:{toggle(){},remove(){}},setAttribute(){},append(){},prepend(){},focus(){},showModal(){this.open=true;},close(){this.open=false;},addEventListener(name,fn){this.events[name]=fn;}});
+    if(!elements.has(id))elements.set(id,{value:'',textContent:'',hidden:false,checked:false,open:false,style:{},firstChild:{},events:{},classList:{toggle(){},remove(){}},setCustomValidity(message){this.validationMessage=message;},setAttribute(){},append(){},prepend(){},focus(){},showModal(){this.open=true;},close(){this.open=false;},addEventListener(name,fn){this.events[name]=fn;}});
     return elements.get(id);
   };
   let saved=profile?JSON.stringify({profile}):null;
@@ -61,4 +61,27 @@ test('birthday fields reject invalid and future dates and preserve leap days',()
   }
   submit('2000','2','29');
   assert.equal(current.saved().profile.birthday,'2000-02-29');
+});
+
+test('birthday errors appear while editing and clear after correction',()=>{
+  const current=app();
+  const edit=(id,value)=>{current.element(id).value=value;current.element(id).events.input();};
+  edit('birth-year','19');
+  assert.equal(current.element('birthday-error').textContent,'');
+  edit('birth-year','2000');edit('birth-month','13');
+  assert.match(current.element('birthday-error').textContent,/月/);
+  assert.ok(current.element('birth-month').validationMessage);
+  edit('birth-month','2');edit('birth-day','30');
+  assert.match(current.element('birthday-error').textContent,/実在/);
+  edit('birth-day','29');
+  assert.equal(current.element('birthday-error').textContent,'');
+  assert.equal(current.element('birth-day').validationMessage,'');
+  edit('birth-year','2001');
+  assert.match(current.element('birthday-error').textContent,/実在/);
+  edit('birth-day','28');
+  assert.equal(current.element('birthday-error').textContent,'');
+  edit('birth-month','0');
+  assert.equal(current.element('birthday-error').textContent,'');
+  current.element('birth-month').events.blur();
+  assert.match(current.element('birthday-error').textContent,/月/);
 });
