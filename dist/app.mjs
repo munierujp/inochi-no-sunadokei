@@ -7,7 +7,6 @@ let state={profile:null};
 let storageWorks=true;
 try { const raw=JSON.parse(localStorage.getItem(KEY)); if(raw && typeof raw==='object'){if(raw.profile&&typeof raw.profile.years==='number'){const profile={...raw.profile,years:Math.round(raw.profile.years)};if(calculate(profile.birthday,profile.years))state.profile=profile;}} } catch { storageWorks=false; }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state));storageWorks=true;return true;}catch{storageWorks=false;return false;}}
-let gridDirty=true;
 const nf = new Intl.NumberFormat('ja-JP');
 const dateFormat=new Intl.DateTimeFormat('ja-JP',{year:'numeric',month:'long',day:'numeric'});
 function render(){
@@ -46,13 +45,7 @@ function render(){
   const lower=446-result.fraction*134;
   $('lower-sand').setAttribute('d',`M86 446V${lower+24}Q180 ${lower-24} 274 ${lower+24}V446Z`);
   document.querySelector('.sand-stream').style.display=result.remaining>0?'':'none';
-  if(gridDirty&&document.querySelector('.life-map').open){
-    const fragment=document.createDocumentFragment();
-    for(let i=0;i<result.totalWeeks;i++){const dot=document.createElement('i');if(i<result.elapsedWeeks)dot.className='past';fragment.append(dot);}
-    $('week-grid').replaceChildren(fragment);
-    $('week-description').textContent=`全${nf.format(result.totalWeeks)}週のうち、${nf.format(Math.min(result.totalWeeks,result.elapsedWeeks))}週を過ごしました。最後の粒には端数の日を含みます。`;
-    gridDirty=false;
-  }
+
 }
 const settings=$('settings');
 function needsSetup(){return !state.profile||!genders.has(state.profile.gender);}
@@ -97,7 +90,7 @@ $('settings-form').addEventListener('submit',event=>{
   const birthday=$('birthday').value,years=Number($('lifespan').value),gender=selectedGender();
   if(!calculate(birthday,years)){$('form-error').textContent='今日以前の生年月日と、1〜120歳の整数の寿命を入力してください。';return;}
   if(!genders.has(gender)){$('form-error').textContent='性別を選択してください。';return;}
-  state.profile={birthday,gender,years};const saved=save();gridDirty=true;render();
+  state.profile={birthday,gender,years};const saved=save();render();
   document.querySelector('.hero').prepend(document.querySelector('.hourglass-scene'));
   document.body.append(document.querySelector('footer'));
   $('onboarding-scene').hidden=true;
@@ -111,9 +104,8 @@ $('reset').addEventListener('click',()=>{
   if(!confirm('生年月日・性別・寿命の設定を削除しますか？'))return;
   state={profile:null};
   try{localStorage.removeItem(KEY);}catch{}
-  $('settings-status').textContent='保存したデータを削除しました';gridDirty=true;settings.close();render();openSettings();
+  $('settings-status').textContent='保存したデータを削除しました';settings.close();render();openSettings();
 });
-document.querySelector('.life-map').addEventListener('toggle',render);
 render();setInterval(()=>{if(!document.hidden)render();},1000);
 if(needsSetup())openSettings();else document.body.classList.remove('onboarding');
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)render();});

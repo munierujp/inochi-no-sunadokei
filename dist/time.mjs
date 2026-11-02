@@ -30,5 +30,5 @@ export function calculate(birthday, years, now = new Date()) {
   }
   const rest=remaining>0?Math.max(0,end-addCalendarMonths(now,months)):0;
   const duration={years:Math.floor(months/12),months:months%12,days:Math.floor(rest/DAY),hours:Math.floor(rest/3600000)%24,minutes:Math.floor(rest/60000)%60,seconds:Math.floor(rest/1000)%60};
-  return {birth,end,remaining,fraction,duration,days:Math.floor(remaining/DAY),weeks:Math.floor(remaining/DAY/7),months,years:Math.floor(months/12),totalWeeks:Math.ceil((end-birth)/DAY/7),elapsedWeeks:Math.floor((now-birth)/DAY/7)};
+  return {birth,end,remaining,fraction,duration,days:Math.floor(remaining/DAY),weeks:Math.floor(remaining/DAY/7),months,years:Math.floor(months/12)};
 }
