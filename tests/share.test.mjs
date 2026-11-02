@@ -8,7 +8,7 @@ test('X intent contains the countdown and Japanese hashtag as encoded text',()=>
   assert.equal(url.origin,'https://x.com');
   assert.equal(url.pathname,'/intent/tweet');
   assert.equal(url.hash,'');
-  assert.equal(url.searchParams.get('text'),'人生の残り時間：48年3ヶ月20日 23時間51分58秒\n#命の砂時計');
+  assert.equal(url.searchParams.get('text'),'私の人生の残り時間：48年 3ヶ月 20日 23時間 51分 58秒\n#命の砂時計');
 });
 test('published canonical is shared without query strings or fragments',()=>{
   const url=new URL(buildXShareURL(duration,'https://inochi-no-sunadokei.munieru.app/?from=preview#settings'));
@@ -18,5 +18,5 @@ test('published canonical is shared without query strings or fragments',()=>{
 test('local and invalid URLs are omitted and expired countdown remains shareable',()=>{
   for(const page of ['http://127.0.0.1:4173/','https://localhost:4173/','https://127.0.0.1/','https://[::1]/','file:///local/index.html','invalid'])assert.equal(new URL(buildXShareURL(duration,page)).searchParams.has('url'),false);
   const zero={years:0,months:0,days:0,hours:0,minutes:0,seconds:0};
-  assert.ok(new URL(buildXShareURL(zero)).searchParams.get('text').includes('0年0ヶ月0日 0時間0分0秒'));
+  assert.ok(new URL(buildXShareURL(zero)).searchParams.get('text').includes('0年 0ヶ月 0日 0時間 0分 0秒'));
 });
