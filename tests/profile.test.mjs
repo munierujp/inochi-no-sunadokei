@@ -9,14 +9,14 @@ const source=(await readFile(new URL('../dist/app.mjs',import.meta.url),'utf8'))
 function app(profile){
   const elements=new Map();
   const element=id=>{
-    if(!elements.has(id))elements.set(id,{value:'',textContent:'',hidden:false,checked:false,open:false,style:{},firstChild:{},events:{},classList:{toggle(){},remove(){}},setCustomValidity(message){this.validationMessage=message;},setAttribute(name,value){this[name]=value;},append(){},prepend(){},focus(){},showModal(){this.open=true;},close(){this.open=false;},addEventListener(name,fn){this.events[name]=fn;}});
+    if(!elements.has(id))elements.set(id,{value:'',textContent:'',hidden:false,checked:false,open:false,style:{},firstChild:{},events:{},classList:{toggle(){},remove(){}},setCustomValidity(message){this.validationMessage=message;},setAttribute(name,value){this[name]=value;},append(){},prepend(){},focus(){},showModal(){this.open=true;},close(){this.open=false;},dispatchEvent(event){this.events[event.type]?.(event);},addEventListener(name,fn){this.events[name]=fn;}});
     return elements.get(id);
   };
   let saved=profile?JSON.stringify({profile}):null;
   vm.runInNewContext(source,{
     document:{getElementById:element,querySelector:element,querySelectorAll(){return [];},body:element('body'),addEventListener(){}},
     localStorage:{getItem(){return saved;},setItem(key,value){saved=value;},removeItem(){saved=null;}},
-    calculate,AVERAGE_LIFESPAN,buildXShareURL,Intl,Date,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(){}
+    calculate,AVERAGE_LIFESPAN,buildXShareURL,Event,Intl,Date,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(){}
   });
   return {element,saved:()=>JSON.parse(saved)};
 }
@@ -107,4 +107,26 @@ test('About fallback dismisses backdrop taps but preserves content clicks and dr
   assert.equal(about.open,true);
   about.events.pointerdown(event(10,10));about.events.click(event(10,10));
   assert.equal(about.open,false);
+});
+
+test('birthday arrow keys step fields, respect limits and revalidate calendar dates',()=>{
+  const {element}=app();
+  element('birth-year').value='2000';element('birth-month').value='2';element('birth-day').value='29';
+  const key=(id,key,extra={})=>{
+    let prevented=false;
+    element(id).events.keydown({key,preventDefault(){prevented=true;},...extra});
+    return prevented;
+  };
+  assert.equal(key('birth-day','ArrowUp'),true);
+  assert.equal(element('birth-day').value,'30');
+  assert.match(element('birthday-error').textContent,/実在/);
+  key('birth-day','ArrowDown');assert.equal(element('birthday-error').textContent,'');
+  key('birth-year','ArrowUp');assert.match(element('birthday-error').textContent,/実在/);
+  element('birth-month').value='12';key('birth-month','ArrowUp');assert.equal(element('birth-month').value,'12');
+  element('birth-day').value='1';key('birth-day','ArrowDown');assert.equal(element('birth-day').value,'1');
+  element('birth-year').value='1900';key('birth-year','ArrowDown');assert.equal(element('birth-year').value,'1900');
+  element('birth-month').value='０２';key('birth-month','ArrowUp');assert.equal(element('birth-month').value,'3');
+  assert.equal(key('birth-month','ArrowDown',{isComposing:true}),false);
+  assert.equal(key('birth-month','ArrowDown',{ctrlKey:true}),false);
+  element('birth-day').value='';assert.equal(key('birth-day','ArrowUp'),false);
 });

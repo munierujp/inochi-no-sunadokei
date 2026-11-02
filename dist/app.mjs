@@ -92,6 +92,17 @@ birthIds.forEach(id=>$(id).addEventListener('input',()=>{
   else clearBirthdayErrors();
   $('form-error').textContent='';
 }));
+birthIds.forEach((id,index)=>$(id).addEventListener('keydown',event=>{
+  if(event.isComposing||event.altKey||event.ctrlKey||event.metaKey||event.shiftKey||!['ArrowUp','ArrowDown'].includes(event.key))return;
+  const input=$(id);
+  const value=input.value.normalize('NFKC').trim();
+  if(!/^[0-9]+$/.test(value))return;
+  event.preventDefault();
+  const minimum=index===0?1900:1;
+  const maximum=index===0?new Date().getFullYear():index===1?12:31;
+  input.value=String(Math.min(maximum,Math.max(minimum,Number(value)+(event.key==='ArrowUp'?1:-1))));
+  input.dispatchEvent(new Event('input',{bubbles:true}));
+}));
 const settings=$('settings');
 function needsSetup(){return !state.profile||!genders.has(state.profile.gender);}
 function openSettings(){
