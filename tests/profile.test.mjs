@@ -63,22 +63,26 @@ test('birthday fields reject invalid and future dates and preserve leap days',()
   assert.equal(current.saved().profile.birthday,'2000-02-29');
 });
 
-test('birthday validation waits for submission, identifies errors and accepts fullwidth numbers',()=>{
+test('complete birthday is validated during input and accepts fullwidth numbers',()=>{
   const current=app();
   const edit=(id,value)=>{current.element(id).value=value;current.element(id).events.input();};
   const submit=()=>current.element('settings-form').events.submit({preventDefault(){}});
-  edit('birth-year','2000');edit('birth-month','13');edit('birth-day','30');
+  edit('birth-year','2000');edit('birth-month','13');
   assert.equal(current.element('birthday-error').textContent,'');
-  submit();
+  edit('birth-day','30');
   assert.match(current.element('birthday-error').textContent,/月/);
   assert.equal(current.element('birth-month')['aria-invalid'],'true');
   assert.equal(current.element('birth-year')['aria-invalid'],'false');
   edit('birth-month','2');
-  assert.equal(current.element('birthday-error').textContent,'');
-  submit();
   assert.match(current.element('birthday-error').textContent,/実在/);
   for(const part of ['year','month','day'])assert.equal(current.element('birth-'+part)['aria-invalid'],'true');
-  edit('birth-day','');submit();
+  edit('birth-day','29');
+  assert.equal(current.element('birthday-error').textContent,'');
+  edit('birth-year','2001');
+  assert.match(current.element('birthday-error').textContent,/実在/);
+  edit('birth-day','');
+  assert.equal(current.element('birthday-error').textContent,'');
+  submit();
   assert.match(current.element('birthday-error').textContent,/日を入力/);
   edit('birth-year','２９９９');edit('birth-month','１');edit('birth-day','１');submit();
   assert.match(current.element('birthday-error').textContent,/今日以前/);

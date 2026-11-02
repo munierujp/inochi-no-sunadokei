@@ -87,7 +87,9 @@ function validateBirthday(){
   return !message;
 }
 birthIds.forEach(id=>$(id).addEventListener('input',()=>{
-  clearBirthdayErrors();
+  const [year,month,day]=birthdayValues();
+  if(year.length>=4&&month&&day&&month!=='0'&&day!=='0')validateBirthday();
+  else clearBirthdayErrors();
   $('form-error').textContent='';
 }));
 const settings=$('settings');
