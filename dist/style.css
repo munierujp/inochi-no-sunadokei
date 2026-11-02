@@ -180,3 +180,6 @@ footer { justify-content: center; }
 .field-error { margin: 8px 0 0; color: #a1362a; font-size: 12px; }
 .field-error:empty { display: none; }
 .birthday-inputs input[aria-invalid='true'] { border-color: #a1362a; }
+
+#form-error:empty { display: none; }
+#form-error:focus { outline: 2px solid #a44832; outline-offset: 4px; }

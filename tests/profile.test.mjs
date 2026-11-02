@@ -9,7 +9,7 @@ const source=(await readFile(new URL('../dist/app.mjs',import.meta.url),'utf8'))
 function app(profile){
   const elements=new Map();
   const element=id=>{
-    if(!elements.has(id))elements.set(id,{value:'',textContent:'',hidden:false,checked:false,open:false,style:{},firstChild:{},events:{},classList:{toggle(){},remove(){}},setCustomValidity(message){this.validationMessage=message;},setAttribute(){},append(){},prepend(){},focus(){},showModal(){this.open=true;},close(){this.open=false;},addEventListener(name,fn){this.events[name]=fn;}});
+    if(!elements.has(id))elements.set(id,{value:'',textContent:'',hidden:false,checked:false,open:false,style:{},firstChild:{},events:{},classList:{toggle(){},remove(){}},setCustomValidity(message){this.validationMessage=message;},setAttribute(name,value){this[name]=value;},append(){},prepend(){},focus(){},showModal(){this.open=true;},close(){this.open=false;},addEventListener(name,fn){this.events[name]=fn;}});
     return elements.get(id);
   };
   let saved=profile?JSON.stringify({profile}):null;
@@ -57,31 +57,34 @@ test('birthday fields reject invalid and future dates and preserve leap days',()
   for(const date of [['1990','2','30'],['2999','1','1'],['','1','1'],['1899','1','1'],['1990','','1']]){
     submit(...date);
     assert.equal(current.saved(),null);
-    assert.match(current.element('form-error').textContent,/生年月日/);
+    assert.ok(current.element('form-error').textContent);
   }
   submit('2000','2','29');
   assert.equal(current.saved().profile.birthday,'2000-02-29');
 });
 
-test('birthday errors appear while editing and clear after correction',()=>{
+test('birthday validation waits for submission, identifies errors and accepts fullwidth numbers',()=>{
   const current=app();
   const edit=(id,value)=>{current.element(id).value=value;current.element(id).events.input();};
-  edit('birth-year','19');
+  const submit=()=>current.element('settings-form').events.submit({preventDefault(){}});
+  edit('birth-year','2000');edit('birth-month','13');edit('birth-day','30');
   assert.equal(current.element('birthday-error').textContent,'');
-  edit('birth-year','2000');edit('birth-month','13');
+  submit();
   assert.match(current.element('birthday-error').textContent,/月/);
-  assert.ok(current.element('birth-month').validationMessage);
-  edit('birth-month','2');edit('birth-day','30');
+  assert.equal(current.element('birth-month')['aria-invalid'],'true');
+  assert.equal(current.element('birth-year')['aria-invalid'],'false');
+  edit('birth-month','2');
+  assert.equal(current.element('birthday-error').textContent,'');
+  submit();
   assert.match(current.element('birthday-error').textContent,/実在/);
-  edit('birth-day','29');
-  assert.equal(current.element('birthday-error').textContent,'');
-  assert.equal(current.element('birth-day').validationMessage,'');
-  edit('birth-year','2001');
-  assert.match(current.element('birthday-error').textContent,/実在/);
-  edit('birth-day','28');
-  assert.equal(current.element('birthday-error').textContent,'');
-  edit('birth-month','0');
-  assert.equal(current.element('birthday-error').textContent,'');
-  current.element('birth-month').events.blur();
-  assert.match(current.element('birthday-error').textContent,/月/);
+  for(const part of ['year','month','day'])assert.equal(current.element('birth-'+part)['aria-invalid'],'true');
+  edit('birth-day','');submit();
+  assert.match(current.element('birthday-error').textContent,/日を入力/);
+  edit('birth-year','２９９９');edit('birth-month','１');edit('birth-day','１');submit();
+  assert.match(current.element('birthday-error').textContent,/今日以前/);
+  edit('birth-year',' ２０００ ');edit('birth-month','０２');edit('birth-day','２９');
+  current.element('gender-male').checked=true;
+  current.element('lifespan').value='81.35';
+  submit();
+  assert.equal(current.saved().profile.birthday,'2000-02-29');
 });

@@ -52,39 +52,44 @@ function render(){
 
 }
 const birthIds=['birth-year','birth-month','birth-day'];
-function validateBirthday(strictId=''){
-  const values=birthIds.map(id=>$(id).value.trim());
-  const [year,month,day]=values;
-  const errors=['','',''];
-  const currentYear=new Date().getFullYear();
-  values.forEach((value,i)=>{
-    const strict=strictId==='all'||strictId===birthIds[i];
-    if(!value){if(strict)errors[i]='生年月日を入力してください。';return;}
-    if(!/^[0-9]+$/.test(value)){errors[i]='半角数字で入力してください。';return;}
-    if(i===0){
-      if(value.length===4||strict){
-        if(value.length!==4||Number(value)<1900||Number(value)>currentYear)errors[i]=`生年は1900〜${currentYear}年の西暦4桁で入力してください。`;
-      }
-    }else{
-      const max=i===1?12:31;
-      if(Number(value)>max||((strict||value.length===2)&&Number(value)<1))errors[i]=`${i===1?'月':'日'}は1〜${max}で入力してください。`;
-    }
-  });
-  if(!errors.some(Boolean)&&year.length===4&&Number(month)>=1&&Number(day)>=1){
-    const birthday=`${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
-    if(!calculate(birthday,80))errors[2]='生年月日は今日以前の実在する日付を入力してください。';
-  }
-  birthIds.forEach((id,i)=>{
-    $(id).setCustomValidity(errors[i]);
-    $(id).setAttribute('aria-invalid',String(!!errors[i]));
-  });
-  $('birthday-error').textContent=errors.find(Boolean)||'';
-  return !errors.some(Boolean);
+const birthLabels=['年','月','日'];
+function birthdayValues(){return birthIds.map(id=>$(id).value.normalize('NFKC').trim());}
+function clearBirthdayErrors(){
+  birthIds.forEach(id=>{$(id).setAttribute('aria-invalid','false');});
+  $('birthday-error').textContent='';
 }
-birthIds.forEach(id=>{
-  $(id).addEventListener('input',()=>validateBirthday());
-  $(id).addEventListener('blur',()=>validateBirthday(id));
-});
+function validateBirthday(){
+  const values=birthdayValues();
+  const [year,month,day]=values;
+  let message='';
+  let invalid=[];
+  const missing=values.map((value,i)=>value?'':birthLabels[i]).filter(Boolean);
+  if(missing.length){
+    message=missing.length===3?'生年月日を入力してください。':`生年月日の${missing.join('・')}を入力してください。`;
+    invalid=values.map((value,i)=>value?-1:i).filter(i=>i>=0);
+  }else if(!/^[0-9]{4}$/.test(year)||Number(year)<1900){
+    message='生年は1900年以降の西暦4桁で入力してください。';invalid=[0];
+  }else if(!/^[0-9]{1,2}$/.test(month)||Number(month)<1||Number(month)>12){
+    message='月は1〜12の数字で入力してください。';invalid=[1];
+  }else if(!/^[0-9]{1,2}$/.test(day)||Number(day)<1||Number(day)>31){
+    message='日は1〜31の数字で入力してください。';invalid=[2];
+  }else{
+    const birthday=`${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
+    const date=new Date(Number(year),Number(month)-1,Number(day));
+    if(date.getFullYear()!==Number(year)||date.getMonth()!==Number(month)-1||date.getDate()!==Number(day)){
+      message='生年月日は実在する日付を入力してください。';invalid=[0,1,2];
+    }else if(date>new Date()){
+      message='生年月日は今日以前の日付を入力してください。';invalid=[0,1,2];
+    }
+  }
+  birthIds.forEach((id,i)=>$(id).setAttribute('aria-invalid',String(invalid.includes(i))));
+  $('birthday-error').textContent=message;
+  return !message;
+}
+birthIds.forEach(id=>$(id).addEventListener('input',()=>{
+  clearBirthdayErrors();
+  $('form-error').textContent='';
+}));
 const settings=$('settings');
 function needsSetup(){return !state.profile||!genders.has(state.profile.gender);}
 function openSettings(){
@@ -102,7 +107,7 @@ function openSettings(){
   $('birth-year').value=year;
   $('birth-month').value=month;
   $('birth-day').value=day;
-  validateBirthday();
+  clearBirthdayErrors();
   genders.forEach(gender=>{$(`gender-${gender}`).checked=state.profile?.gender===gender;});
   $('lifespan').value=state.profile?.years??'';
   $('lifespan-help').textContent=state.profile
@@ -128,16 +133,16 @@ document.querySelectorAll('dialog .close').forEach(button=>button.addEventListen
 document.querySelectorAll('[data-about]').forEach(button=>button.addEventListener('click',()=>$('about').showModal()));
 $('settings-form').addEventListener('submit',event=>{
   event.preventDefault();
-  const year=$('birth-year').value.trim(),month=$('birth-month').value.trim(),day=$('birth-day').value.trim();
+  const [year,month,day]=birthdayValues();
   const birthday=`${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
   const years=Number($('lifespan').value),gender=selectedGender();
-  if(!validateBirthday('all')){
-    $('form-error').textContent='生年月日は1900年以降、今日以前の実在する日付を入力してください。';
-    $('birth-year').focus();
+  if(!validateBirthday()){
+    $('form-error').textContent=$('birthday-error').textContent;
+    $('form-error').focus();
     return;
   }
-  if(!calculate(birthday,years)){$('form-error').textContent='今日以前の生年月日と、1〜120歳の想定寿命（小数可）を入力してください。';return;}
-  if(!genders.has(gender)){$('form-error').textContent='性別を選択してください。';return;}
+  if(!calculate(birthday,years)){$('form-error').textContent='想定寿命は1〜120歳の数字で入力してください。';$('form-error').focus();return;}
+  if(!genders.has(gender)){$('form-error').textContent='性別を選択してください。';$('form-error').focus();return;}
   state.profile={birthday,gender,years};const saved=save();render();
   document.querySelector('.hero').prepend(document.querySelector('.hourglass-scene'));
   document.body.append(document.querySelector('footer'));
