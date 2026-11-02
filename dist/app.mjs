@@ -3,9 +3,9 @@ const $ = id => document.getElementById(id);
 const KEY='inochi-hourglass-v1';
 const genders=new Set(['male','female']);
 function selectedGender(){return [...genders].find(gender=>$(`gender-${gender}`).checked)||'';}
-let state={profile:null,note:''};
+let state={profile:null};
 let storageWorks=true;
-try { const raw=JSON.parse(localStorage.getItem(KEY)); if(raw && typeof raw==='object'){state.note=typeof raw.note==='string'?raw.note.slice(0,180):'';if(raw.profile&&typeof raw.profile.years==='number'){const profile={...raw.profile,years:Math.round(raw.profile.years)};if(calculate(profile.birthday,profile.years))state.profile=profile;}} } catch { storageWorks=false; }
+try { const raw=JSON.parse(localStorage.getItem(KEY)); if(raw && typeof raw==='object'){if(raw.profile&&typeof raw.profile.years==='number'){const profile={...raw.profile,years:Math.round(raw.profile.years)};if(calculate(profile.birthday,profile.years))state.profile=profile;}} } catch { storageWorks=false; }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state));storageWorks=true;return true;}catch{storageWorks=false;return false;}}
 let gridDirty=true;
 const nf = new Intl.NumberFormat('ja-JP');
@@ -99,25 +99,17 @@ $('settings-form').addEventListener('submit',event=>{
   $('onboarding-footer').hidden=true;
   document.body.classList.remove('onboarding');settings.close();
   $('main-setup').focus();
-  $('save-status').textContent=saved?'設定を保存しました':'このブラウザでは保存できません。開いている間のみ保持します。';
+  $('settings-status').textContent=saved?'設定を保存しました':'このブラウザでは保存できません。開いている間のみ保持します。';
 });
-$('intention').value=state.note;
-$('save-status').textContent=storageWorks?'このブラウザに保存されます':'このブラウザでは保存できません。開いている間のみ保持します。';
-let noteTimer;
-$('intention').addEventListener('input',()=>{
-  state.note=$('intention').value;
-  clearTimeout(noteTimer);
-  noteTimer=setTimeout(()=>{$('save-status').textContent=save()?'保存しました':'保存できません。開いている間のみ保持します。';},400);
-});
+$('settings-status').textContent=storageWorks?'':'このブラウザでは設定を保存できません。開いている間のみ保持します。';
 $('reset').addEventListener('click',()=>{
-  if(!confirm('生年月日・性別・設定年齢・今日のメモを削除しますか？'))return;
-  clearTimeout(noteTimer);state={profile:null,note:''};
+  if(!confirm('生年月日・性別・寿命の設定を削除しますか？'))return;
+  state={profile:null};
   try{localStorage.removeItem(KEY);}catch{}
-  $('intention').value='';$('save-status').textContent='保存したデータを削除しました';gridDirty=true;settings.close();render();openSettings();
+  $('settings-status').textContent='保存したデータを削除しました';gridDirty=true;settings.close();render();openSettings();
 });
 document.querySelector('.life-map').addEventListener('toggle',render);
 render();setInterval(()=>{if(!document.hidden)render();},1000);
 if(needsSetup())openSettings();else document.body.classList.remove('onboarding');
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)render();});
 
-document.addEventListener('pwa:before-reload',()=>{clearTimeout(noteTimer);save();});

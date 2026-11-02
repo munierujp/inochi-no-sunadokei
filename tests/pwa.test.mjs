@@ -68,16 +68,16 @@ test('manifest and precache files exist with usable installation metadata',async
   for(const icon of manifest.icons)await access(new URL(icon.src,dist));
 });
 
-test('browser controls offer install, accept updates and preserve state before reload',async()=>{
+test('browser controls offer install and accept updates before reload',async()=>{
   const source=await readFile(new URL('pwa.mjs',dist),'utf8');
   const makeButton=()=>({hidden:true,disabled:false,events:{},addEventListener(name,fn){this.events[name]=fn;}});
   const install=makeButton(),update=makeButton(),windowEvents={},workerEvents={},registrationEvents={};
-  let message,flushed=false,reloaded=false,prompted=false;
+  let message,reloaded=false,prompted=false;
   const registration={waiting:{postMessage(value){message=value;}},addEventListener(name,fn){registrationEvents[name]=fn;},async update(){}};
-  const document={querySelectorAll(selector){return selector==='[data-pwa-install]'?[install]:[update];},addEventListener(){},dispatchEvent(event){if(event.type==='pwa:before-reload')flushed=true;}};
+  const document={querySelectorAll(selector){return selector==='[data-pwa-install]'?[install]:[update];},addEventListener(){},dispatchEvent(){}};
   const window={isSecureContext:true,matchMedia(){return {matches:false};},addEventListener(name,fn){windowEvents[name]=fn;}};
   const navigator={serviceWorker:{controller:{},async register(url,options){assert.equal(url,'./sw.js');assert.equal(options.updateViaCache,'none');return registration;},addEventListener(name,fn){workerEvents[name]=fn;}}};
-  const location={protocol:'https:',reload(){assert.equal(flushed,true);reloaded=true;}};
+  const location={protocol:'https:',reload(){reloaded=true;}};
   await vm.runInNewContext(`(async()=>{${source}\n})()`,{document,window,navigator,location,Event,console});
   assert.equal(update.hidden,false);assert.equal(install.hidden,true);
   windowEvents.beforeinstallprompt({preventDefault(){},async prompt(){prompted=true;},userChoice:Promise.resolve({outcome:'accepted'})});

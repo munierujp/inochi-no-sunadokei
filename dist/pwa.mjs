@@ -34,7 +34,6 @@ if('serviceWorker' in navigator && window.isSecureContext && ['http:','https:'].
     if(!controlled){controlled=true;return;}
     if(reloading)return;
     reloading=true;
-    document.dispatchEvent(new Event('pwa:before-reload'));
     location.reload();
   });
   try {
