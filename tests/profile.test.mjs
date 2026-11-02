@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 import {calculate,AVERAGE_LIFESPAN} from '../dist/time.mjs';
+import {buildXShareURL} from '../dist/share.mjs';
 
-const source=(await readFile(new URL('../dist/app.mjs',import.meta.url),'utf8')).replace(/^import[^\n]+\n/,'');
+const source=(await readFile(new URL('../dist/app.mjs',import.meta.url),'utf8')).replace(/^import[^\n]+\n/gm,'');
 function app(profile){
   const elements=new Map();
   const element=id=>{
@@ -15,7 +16,7 @@ function app(profile){
   vm.runInNewContext(source,{
     document:{getElementById:element,querySelector:element,querySelectorAll(){return [];},body:element('body'),addEventListener(){}},
     localStorage:{getItem(){return saved;},setItem(key,value){saved=value;},removeItem(){saved=null;}},
-    calculate,AVERAGE_LIFESPAN,Intl,Date,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(){}
+    calculate,AVERAGE_LIFESPAN,buildXShareURL,Intl,Date,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(){}
   });
   return {element,saved:()=>JSON.parse(saved)};
 }

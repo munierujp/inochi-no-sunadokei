@@ -1,4 +1,5 @@
 import {calculate,AVERAGE_LIFESPAN} from './time.mjs';
+import {buildXShareURL} from './share.mjs';
 const $ = id => document.getElementById(id);
 const KEY='inochi-hourglass-v1';
 const genders=new Set(['male','female']);
@@ -12,6 +13,7 @@ const dateFormat=new Intl.DateTimeFormat('ja-JP',{year:'numeric',month:'long',da
 function render(){
   const profile=state.profile;
   if(!profile){
+    $('share-x').hidden=true;
     $('days').textContent='—';
     $('upper-sand').setAttribute('y',130);
     $('upper-sand').setAttribute('height',122);
@@ -21,6 +23,8 @@ function render(){
   }
   const result=calculate(profile.birthday,profile.years);
   if(!result)return;
+  $('share-x').href=buildXShareURL(result.duration,document.querySelector('link[rel="canonical"]')?.href);
+  $('share-x').hidden=false;
   $('countdown-years').textContent=nf.format(result.duration.years);
   $('countdown-months').textContent=nf.format(result.duration.months);
   $('days').textContent=nf.format(result.duration.days);
@@ -83,6 +87,7 @@ genders.forEach(gender=>$(`gender-${gender}`).addEventListener('change',()=>{
 const today=new Date();
 $('birthday').max=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 document.querySelectorAll('[data-settings]').forEach(button=>button.addEventListener('click',openSettings));
+$('share-x').addEventListener('click',render);
 document.querySelectorAll('dialog .close').forEach(button=>button.addEventListener('click',()=>button.closest('dialog').close()));
 document.querySelectorAll('[data-about]').forEach(button=>button.addEventListener('click',()=>$('about').showModal()));
 $('settings-form').addEventListener('submit',event=>{

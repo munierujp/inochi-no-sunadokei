@@ -25,12 +25,12 @@ function worker(origin='https://example.test/app/'){
 }
 
 test('offline app shell, navigation query and assets use the versioned cache',async()=>{
-  const w=worker();await w.event('install');assert.equal(w.requests.length,13);
+  const w=worker();await w.event('install');assert.equal(w.requests.length,14);
   assert.ok(w.requests.every(request=>request.cache==='reload'));
   assert.equal(w.skipped,0);
   w.online=false;
   assert.equal(await (await w.get('./?from=home','navigate')).text(),'saved:/app/index.html');
-  for(const file of ['style.css','app.mjs','time.mjs','pwa.mjs','assets/logo-wordmark-a.png','site.webmanifest'])assert.equal(await (await w.get(file)).text(),`saved:/app/${file}`);
+  for(const file of ['style.css','app.mjs','time.mjs','share.mjs','pwa.mjs','assets/logo-wordmark-a.png','site.webmanifest'])assert.equal(await (await w.get(file)).text(),`saved:/app/${file}`);
   assert.equal(await w.get('https://x.com/munieru_jp'),undefined);
   assert.equal(await w.get('api/profile'),undefined);
   assert.equal(await w.get('app.mjs','cors','POST'),undefined);
