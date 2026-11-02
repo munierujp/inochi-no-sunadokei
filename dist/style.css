@@ -69,7 +69,6 @@ dialog p { font-size: 13px; line-height: 1.9; color: var(--muted); }
 dialog label { display: block; margin: 20px 0 8px; font-size: 14px; }
 dialog label small { display: inline-block; margin-left: 6px; font-size: 11px; color: var(--muted); }
 dialog input, dialog select { display: block; width: 100%; min-width: 0; max-width: 100%; min-height: 48px; padding: 11px 12px; border: 1px solid #cfcebf; border-radius: 3px; background: #fbf9f3; font-size: 16px; }
-input[type='date'] { appearance: none; -webkit-appearance: none; }
 .age-field { display: flex; align-items: center; gap: 12px; }
 .age-field input { width: 120px; }
 .field-help, .privacy { font-size: 12px; }
@@ -170,3 +169,10 @@ footer { justify-content: center; }
   .orbit { width: min(72%, 300px); }
   .orbit-two { width: min(88%, 360px); }
 }
+
+.birthday-field { min-width: 0; margin: 20px 0 0; padding: 0; border: 0; }
+.birthday-field legend { padding: 0; font-size: 14px; }
+.birthday-field legend small { margin-left: 6px; font-size: 11px; color: var(--muted); }
+.birthday-inputs { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 12px; margin-top: 8px; }
+.birthday-inputs label { min-width: 0; margin: 0; font-size: 12px; }
+.birthday-inputs input { margin-top: 6px; }

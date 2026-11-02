@@ -64,7 +64,10 @@ function openSettings(){
   }
   $('settings-title').textContent=initial?'初期設定':'設定';
   $('settings-submit').firstChild.textContent=initial?'はじめる ':'保存 ';
-  $('birthday').value=state.profile?.birthday||'';
+  const [year='',month='',day='']=(state.profile?.birthday||'').split('-');
+  $('birth-year').value=year;
+  $('birth-month').value=month;
+  $('birth-day').value=day;
   genders.forEach(gender=>{$(`gender-${gender}`).checked=state.profile?.gender===gender;});
   $('lifespan').value=state.profile?.years??'';
   $('lifespan-help').textContent=state.profile
@@ -84,15 +87,20 @@ genders.forEach(gender=>$(`gender-${gender}`).addEventListener('change',()=>{
     : '性別を選ぶと平均寿命を自動入力します。';
   $('form-error').textContent='';
 }));
-const today=new Date();
-$('birthday').max=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 document.querySelectorAll('[data-settings]').forEach(button=>button.addEventListener('click',openSettings));
 $('share-x').addEventListener('click',render);
 document.querySelectorAll('dialog .close').forEach(button=>button.addEventListener('click',()=>button.closest('dialog').close()));
 document.querySelectorAll('[data-about]').forEach(button=>button.addEventListener('click',()=>$('about').showModal()));
 $('settings-form').addEventListener('submit',event=>{
   event.preventDefault();
-  const birthday=$('birthday').value,years=Number($('lifespan').value),gender=selectedGender();
+  const year=$('birth-year').value.trim(),month=$('birth-month').value.trim(),day=$('birth-day').value.trim();
+  const birthday=`${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
+  const years=Number($('lifespan').value),gender=selectedGender();
+  if(!/^[0-9]{4}$/.test(year)||Number(year)<1900||!/^[0-9]{1,2}$/.test(month)||!/^[0-9]{1,2}$/.test(day)||!calculate(birthday,80)){
+    $('form-error').textContent='生年月日は1900年以降、今日以前の実在する日付を入力してください。';
+    $('birth-year').focus();
+    return;
+  }
   if(!calculate(birthday,years)){$('form-error').textContent='今日以前の生年月日と、1〜120歳の想定寿命（小数可）を入力してください。';return;}
   if(!genders.has(gender)){$('form-error').textContent='性別を選択してください。';return;}
   state.profile={birthday,gender,years};const saved=save();render();
