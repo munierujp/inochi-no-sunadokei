@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f2eb">
+<meta name="description" content="生年月日と寿命から、残り時間を表示するアプリ。">
+<title>命の砂時計</title>
+<!-- brand-metadata:start -->
+<link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" href="favicon.svg" type="image/svg+xml" sizes="any">
+<link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
+<link rel="manifest" href="site.webmanifest">
+<meta name="application-name" content="命の砂時計">
+<meta name="apple-mobile-web-app-title" content="命の砂時計">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="canonical" href="http://127.0.0.1:4173/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:site_name" content="命の砂時計">
+<meta property="og:title" content="命の砂時計">
+<meta property="og:description" content="生年月日と寿命から、残り時間を表示するアプリ。">
+<meta property="og:url" content="http://127.0.0.1:4173/">
+<meta property="og:image" content="http://127.0.0.1:4173/assets/og-banner.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="命の砂時計のロゴと砂時計">
+<meta property="og:image" content="http://127.0.0.1:4173/assets/og-icon.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:image:alt" content="砂時計のアイコン">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@munieru_jp">
+<meta name="twitter:creator" content="@munieru_jp">
+<meta name="twitter:title" content="命の砂時計">
+<meta name="twitter:description" content="生年月日と寿命から、残り時間を表示するアプリ。">
+<meta name="twitter:image" content="http://127.0.0.1:4173/assets/og-banner.png">
+<meta name="twitter:image:alt" content="命の砂時計のロゴと砂時計">
+<!-- brand-metadata:end -->
+<link rel="stylesheet" href="style.css"><script type="module" src="app.mjs"></script><script type="module" src="pwa.mjs"></script>
+</head>
+<body class="onboarding">
+<header class="header"><a href="#" class="brand" aria-label="命の砂時計 ホーム"><img class="brand-logo" src="assets/logo-wordmark-a.png" alt="命の砂時計" width="2171" height="724" decoding="async"></a><div class="header-actions"><button class="text-button" data-pwa-install hidden>アプリを追加</button><button class="text-button" data-pwa-update hidden>更新する</button><button class="text-button" data-about>この砂時計について</button><button class="text-button" data-settings><span aria-hidden="true">⚙</span> 砂時計を設定 <span aria-hidden="true">↗</span></button></div></header>
+<noscript><p class="noscript-message">この砂時計を使うには、ブラウザのJavaScriptを有効にしてください。</p></noscript><main>
+<section class="hero" aria-labelledby="hero-title">
+<div class="hourglass-scene"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><svg class="hourglass" viewBox="0 0 360 510" role="img" aria-labelledby="glass-title"><title id="glass-title">これからの時間を表す砂が、静かに落ちる砂時計</title><defs><linearGradient id="glass" x1="0" x2="1"><stop stop-color="#fff" stop-opacity=".65"/><stop offset=".3" stop-color="#fff" stop-opacity=".12"/><stop offset=".8" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity=".65"/></linearGradient><linearGradient id="sand" x2=".8" y2="1"><stop stop-color="#d9b17b"/><stop offset="1" stop-color="#ac7545"/></linearGradient><linearGradient id="wood"><stop stop-color="#aa7d51"/><stop offset=".5" stop-color="#735239"/><stop offset="1" stop-color="#b38d65"/></linearGradient><clipPath id="inside"><path d="M91 64H269C269 176 200 210 187 248Q182 255 187 262C200 300 269 334 269 446H91C91 334 160 300 173 262Q178 255 173 248C160 210 91 176 91 64Z"/></clipPath><filter id="shadow"><feGaussianBlur stdDeviation="9"/></filter></defs><ellipse cx="180" cy="477" rx="118" ry="10" fill="#6b5030" opacity=".13" filter="url(#shadow)"/><path d="M69 54V457M291 54V457" stroke="url(#wood)" stroke-width="8"/><path d="M91 64H269C269 176 200 210 187 248Q182 255 187 262C200 300 269 334 269 446H91C91 334 160 300 173 262Q178 255 173 248C160 210 91 176 91 64Z" fill="url(#glass)" stroke="#bda98c" stroke-width="1.4"/><g clip-path="url(#inside)"><rect id="upper-sand" x="86" y="130" width="188" height="122" fill="url(#sand)"/><path id="lower-sand" d="M86 446V408Q180 355 274 408V446Z" fill="url(#sand)"/><path class="sand-stream" d="M180 254V424" stroke="#b98b50" stroke-width="1.7" stroke-dasharray="2 5"/><path d="M106 74C109 175 164 206 178 244M106 435C110 338 159 303 173 280" fill="none" stroke="white" stroke-width="4" opacity=".65"/></g><rect x="53" y="43" width="254" height="15" rx="7.5" fill="url(#wood)"/><rect x="53" y="451" width="254" height="15" rx="7.5" fill="url(#wood)"/><path d="M62 46H298M62 454H298" stroke="#d5b28b" opacity=".6"/></svg></div>
+<div class="hero-copy"><h1 id="hero-title">残り時間</h1><div class="countdown"><div class="counter-label"><span>設定した寿命まで</span><span id="demo-badge" class="badge">サンプル表示</span></div><div class="days-line"><span id="days">—</span><span class="day-unit">日</span></div><div class="clock" aria-label="残りの時間"><span id="hours">00</span><small>時間</small><b>:</b><span id="minutes">00</span><small>分</small><b>:</b><span id="seconds">00</span><small>秒</small></div></div><div class="hero-actions"><button class="primary" data-settings id="main-setup">設定する <span aria-hidden="true">↗</span></button><p id="basis">1990年1月1日生まれ・寿命80歳で計算した例</p></div><p class="disclaimer">設定した寿命に基づく表示です。個人の寿命の予測ではありません。</p></div>
+</section>
+<section class="journey" aria-labelledby="journey-title"><div class="journey-heading"><h2 id="journey-title">経過と残り</h2><span id="progress-label">—</span></div><div class="progress-track" role="progressbar" aria-label="寿命までに過ごした時間" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progress-fill"></div></div><div class="progress-legend"><span><i class="past-dot"></i>経過した時間 <strong id="elapsed-percent">—</strong></span><span><i class="future-dot"></i>残りの時間 <strong id="remaining-percent">—</strong></span></div></section>
+<section class="moments" aria-label="残り時間の別の見方"><div><span class="small-label">残りの週</span><p>あと <strong id="weeks">—</strong> 週間</p></div><div><span class="small-label">残りの季節</span><p>約 <strong id="seasons">—</strong> 回の季節</p></div><div><span class="small-label">今日</span><p>今日の <strong>24</strong> 時間</p></div></section>
+<section class="intention"><div><h2>メモ</h2></div><div class="note-wrap"><label class="sr-only" for="intention">メモ</label><textarea id="intention" maxlength="180" rows="2" placeholder="メモを入力"></textarea><div class="note-footer"><span id="save-status" role="status">このブラウザに保存されます</span><span aria-hidden="true">自動保存</span></div></div></section>
+<details class="life-map"><summary><span>週ごとの表示</span><span class="expand" aria-hidden="true">＋</span></summary><div class="map-body"><p>ひと粒は一週間。色のついた粒は、すでに過ごした時間です。</p><div class="week-grid" id="week-grid" aria-hidden="true"></div><p id="week-description"></p></div></details>
+
+</main>
+<footer><span>制作：ムニエル <a class="text-button" href="https://x.com/munieru_jp" target="_blank" rel="noopener noreferrer" aria-label="ムニエルのXアカウント @munieru_jp（新しいタブで開く）">X @munieru_jp ↗</a></span></footer>
+<dialog id="settings" aria-labelledby="settings-title"><div class="onboarding-header"><img class="brand-logo" src="assets/logo-wordmark-a.png" alt="命の砂時計" width="2171" height="724" decoding="async"><button class="text-button" data-about>この砂時計について</button><div class="header-actions"><button class="text-button" data-pwa-install hidden>アプリを追加</button><button class="text-button" data-pwa-update hidden>更新する</button></div></div><div id="onboarding-scene" hidden></div><form id="settings-form"><div class="dialog-top"><button type="button" class="close" aria-label="設定を閉じる">×</button></div><h2 id="settings-title">初期設定</h2><p>生年月日・性別・寿命を入力してください。</p><label for="birthday">生年月日 <small>必須</small></label><input type="date" id="birthday" name="birthday" autocomplete="bday" required min="1900-01-01"><fieldset class="gender-field" aria-describedby="gender-help"><legend>性別 <small>必須</small></legend><div class="gender-options"><label for="gender-male"><input type="radio" id="gender-male" name="gender" value="male" required>男性</label><label for="gender-female"><input type="radio" id="gender-female" name="gender" value="female" required>女性</label></div></fieldset><p class="field-help" id="gender-help">性別を選ぶと平均寿命を自動入力します。</p><label for="lifespan">寿命</label><div class="age-field"><input type="number" id="lifespan" name="lifespan" inputmode="numeric" min="1" max="120" step="1" aria-describedby="lifespan-help lifespan-source" required><span>歳</span></div><p class="field-help" id="lifespan-help" role="status">性別を選んで自動入力するか、寿命を直接入力してください。</p><p class="field-help" id="lifespan-source">日本の平均寿命を四捨五入して入力します：男性81歳・女性87歳。<br>出典：<a href="https://www.mhlw.go.jp/toukei/saikin/hw/life/life25/index.html" target="_blank" rel="noopener noreferrer">厚生労働省・2025年簡易生命表</a></p><p id="form-error" role="alert"></p><button class="primary full" type="submit">表示する <span aria-hidden="true">↗</span></button><p class="privacy">入力内容はこのブラウザ内にだけ保存します。<br>このアプリからサーバーに送信しません。</p><button type="button" id="reset" class="text-button reset">保存したデータを削除する</button></form><div id="onboarding-footer" hidden></div></dialog>
+<dialog id="about"><div class="dialog-top"><button type="button" class="close" aria-label="説明を閉じる">×</button></div><h2>命の砂時計について</h2><p>ホーム画面に追加してアプリとして使えます。iPhone・iPadはSafariの共有メニューから「ホーム画面に追加」を選んでください。対応ブラウザでは「アプリを追加」ボタンも表示されます。一度読み込み、オフライン用の保存が完了すると、ネット接続なしでも砂時計とメモを使えます。</p><p>生年月日と設定した寿命から残り時間を計算します。自動入力は日本の2025年の平均寿命（0歳の平均余命）を使い、現在の年齢別の平均余命や健康状態から個人の寿命を予測するものではありません。寿命は整数で設定し、その年齢の誕生日までを計算します。</p><p>残り時間は、設定した寿命に達する日までを計算しています。週は7日、季節は1年を4分割した長さで換算する概数です。設定した寿命を過ぎると残り時間は0になります。</p><p>生年月日、性別、寿命、今日のメモはこのブラウザの保存領域に保存されます。ブラウザのデータ削除で消える場合があります。設定画面からまとめて削除できます。</p><button class="primary full close" type="button">閉じる</button></dialog>
+</body></html>
