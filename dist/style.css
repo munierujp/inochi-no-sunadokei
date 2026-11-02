@@ -44,16 +44,15 @@ h1 { margin: 0 0 12px; font-size: 18px; font-weight: 400; }
 .journey { padding-block: 24px; border-top: 1px solid var(--line); }
 .journey-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
 .journey-heading h2 { margin: 0; font-size: 16px; font-weight: 400; }
-.journey-heading > span { font-size: 12px; color: var(--muted); }
 .progress-track { height: 7px; margin-block: 16px; overflow: hidden; border-radius: 4px; background: #e1e0d4; }
 .progress-track > div { width: 0; height: 100%; background: var(--sand); transition: width .8s; }
 .progress-legend { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; font-size: 12px; color: var(--muted); }
 .progress-legend span { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
 .progress-legend strong { color: var(--ink); font-weight: 400; }
-.past-dot, .future-dot { display: inline-block; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--sand); }
-.future-dot { background: #deded1; }
+.past-dot { display: inline-block; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--sand); }
 .moments { display: grid; grid-template-columns: minmax(0, 1fr); border-bottom: 1px solid var(--line); }
 .moments > div { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 12px; padding-block: 16px; border-top: 1px solid var(--line); }
+.moments h2 { grid-column: 1 / -1; margin: 0 0 12px; font-size: 16px; font-weight: 400; }
 .small-label { font-size: 12px; color: var(--muted); }
 .moments p { margin: 0; font-size: 14px; }
 .moments strong { margin-inline: 5px; font: 30px Georgia, serif; }
@@ -92,9 +91,9 @@ dialog input, dialog select { display: block; width: 100%; min-width: 0; max-wid
   .header { padding-block: 22px; }
   .brand { font-size: 20px; }
   .hero { padding-top: 24px; }
-  .moments { grid-template-columns: repeat(4, minmax(0, 1fr)); padding-block: 24px; }
+  .moments { grid-template-columns: repeat(3, minmax(0, 1fr)); padding-block: 24px; }
   .moments > div { display: block; padding: 0 20px; border-top: 0; border-left: 1px solid var(--line); }
-  .moments > div:first-child { padding-left: 0; border-left: 0; }
+  .moments > div:first-of-type { padding-left: 0; border-left: 0; }
   .moments p { margin-top: 12px; }
 }
 @media (min-width: 900px) {

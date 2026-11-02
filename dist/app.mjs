@@ -36,13 +36,10 @@ function render(){
   const milestone=result.remaining===0?'想定寿命を超えて、今日を迎えました。\nこれからも健やかな日々が続きますように。':'';
   if($('milestone-message').textContent!==milestone)$('milestone-message').textContent=milestone;
   const percent=(result.fraction*100).toFixed(1);
-  $('progress-label').textContent=`${dateFormat.format(result.end)}まで`;
   $('progress-fill').style.width=percent+'%';
   document.querySelector('[role="progressbar"]').setAttribute('aria-valuenow',percent);
   $('elapsed-percent').textContent=percent+'%';
-  $('remaining-percent').textContent=(100-Number(percent)).toFixed(1)+'%';
   $('remaining-days').textContent=nf.format(result.days);
-  $('weeks').textContent=nf.format(result.weeks);
   $('months').textContent=nf.format(result.months);
   $('years').textContent=nf.format(result.years);
   const upper=75+result.fraction*173;
