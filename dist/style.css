@@ -163,3 +163,10 @@ footer { justify-content: center; }
 
 /* Dialog entry focus rests on this non-interactive heading. */
 #settings-title:focus { outline: none; }
+
+@media (max-width: 599px) {
+  .hourglass { width: min(84%, calc(48svh * .705882), 320px); }
+  .onboarding .hourglass { width: min(76%, calc(34svh * .705882), 260px); }
+  .orbit { width: min(72%, 300px); }
+  .orbit-two { width: min(88%, 360px); }
+}
