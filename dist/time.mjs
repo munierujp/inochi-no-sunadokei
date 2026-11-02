@@ -17,5 +17,14 @@ export function calculate(birthday, years, now = new Date()) {
   const end = deadline(birth, years);
   const remaining = Math.max(0, end - now);
   const fraction = Math.min(1,Math.max(0,(now-birth)/(end-birth)));
-  return {birth,end,remaining,fraction,days:Math.floor(remaining/DAY),hours:Math.floor(remaining/3600000)%24,minutes:Math.floor(remaining/60000)%60,seconds:Math.floor(remaining/1000)%60,totalWeeks:Math.ceil((end-birth)/DAY/7),elapsedWeeks:Math.floor((now-birth)/DAY/7)};
+  let months=0;
+  if(remaining>0){
+    months=(end.getFullYear()-now.getFullYear())*12+end.getMonth()-now.getMonth();
+    const first=new Date(now.getFullYear(),now.getMonth()+months,1);
+    const last=new Date(first.getFullYear(),first.getMonth()+1,0).getDate();
+    const anniversary=new Date(first.getFullYear(),first.getMonth(),Math.min(now.getDate(),last),now.getHours(),now.getMinutes(),now.getSeconds(),now.getMilliseconds());
+    if(anniversary>end)months--;
+    months=Math.max(0,months);
+  }
+  return {birth,end,remaining,fraction,days:Math.floor(remaining/DAY),weeks:Math.floor(remaining/DAY/7),months,years:Math.floor(months/12),hours:Math.floor(remaining/3600000)%24,minutes:Math.floor(remaining/60000)%60,seconds:Math.floor(remaining/1000)%60,totalWeeks:Math.ceil((end-birth)/DAY/7),elapsedWeeks:Math.floor((now-birth)/DAY/7)};
 }

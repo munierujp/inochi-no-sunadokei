@@ -109,7 +109,7 @@ input[type='date'] { appearance: none; -webkit-appearance: none; }
   .header { padding-block: 22px; }
   .brand { font-size: 20px; }
   .hero { padding-top: 24px; }
-  .moments { grid-template-columns: repeat(3, minmax(0, 1fr)); padding-block: 24px; }
+  .moments { grid-template-columns: repeat(4, minmax(0, 1fr)); padding-block: 24px; }
   .moments > div { display: block; padding: 0 20px; border-top: 0; border-left: 1px solid var(--line); }
   .moments > div:first-child { padding-left: 0; border-left: 0; }
   .moments p { margin-top: 12px; }

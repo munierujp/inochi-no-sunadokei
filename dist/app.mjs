@@ -1,4 +1,4 @@
-import {calculate,DAY,AVERAGE_LIFESPAN} from './time.mjs';
+import {calculate,AVERAGE_LIFESPAN} from './time.mjs';
 const $ = id => document.getElementById(id);
 const KEY='inochi-hourglass-v1';
 const genders=new Set(['male','female']);
@@ -34,8 +34,10 @@ function render(){
   document.querySelector('[role="progressbar"]').setAttribute('aria-valuenow',percent);
   $('elapsed-percent').textContent=percent+'%';
   $('remaining-percent').textContent=(100-Number(percent)).toFixed(1)+'%';
-  $('weeks').textContent=nf.format(Math.floor(result.remaining/DAY/7));
-  $('seasons').textContent=nf.format(Math.floor(result.remaining/DAY/365.2425*4));
+  $('remaining-days').textContent=nf.format(result.days);
+  $('weeks').textContent=nf.format(result.weeks);
+  $('months').textContent=nf.format(result.months);
+  $('years').textContent=nf.format(result.years);
   const upper=75+result.fraction*173;
   $('upper-sand').setAttribute('y',upper);
   $('upper-sand').setAttribute('height',Math.max(0,252-upper));
@@ -112,4 +114,3 @@ document.querySelector('.life-map').addEventListener('toggle',render);
 render();setInterval(()=>{if(!document.hidden)render();},1000);
 if(needsSetup())openSettings();else document.body.classList.remove('onboarding');
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)render();});
-
