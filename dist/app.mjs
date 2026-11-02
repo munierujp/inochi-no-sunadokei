@@ -5,7 +5,7 @@ const genders=new Set(['male','female']);
 function selectedGender(){return [...genders].find(gender=>$(`gender-${gender}`).checked)||'';}
 let state={profile:null};
 let storageWorks=true;
-try { const raw=JSON.parse(localStorage.getItem(KEY)); if(raw && typeof raw==='object'){if(raw.profile&&typeof raw.profile.years==='number'){const profile={...raw.profile,years:Math.round(raw.profile.years)};if(calculate(profile.birthday,profile.years))state.profile=profile;}} } catch { storageWorks=false; }
+try { const raw=JSON.parse(localStorage.getItem(KEY)); if(raw && typeof raw==='object'){if(raw.profile&&typeof raw.profile.years==='number'){const profile={...raw.profile,years:raw.profile.years};if(calculate(profile.birthday,profile.years))state.profile=profile;}} } catch { storageWorks=false; }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state));storageWorks=true;return true;}catch{storageWorks=false;return false;}}
 const nf = new Intl.NumberFormat('ja-JP');
 const dateFormat=new Intl.DateTimeFormat('ja-JP',{year:'numeric',month:'long',day:'numeric'});
@@ -27,8 +27,8 @@ function render(){
   ['hours','minutes','seconds'].forEach(key=>$(key).textContent=String(result.duration[key]).padStart(2,'0'));
   $('demo-badge').hidden=!!state.profile;
   $('main-setup').firstChild.textContent=state.profile?'設定変更 ':'設定 ';
-  $('basis').textContent=`${dateFormat.format(result.birth)}生まれ・寿命 ${profile.years}歳で計算`;
-  if(result.remaining===0)$('basis').textContent+=' — 設定した寿命に達しました。';
+  $('basis').textContent=`${dateFormat.format(result.birth)}生まれ・想定寿命 ${profile.years}歳で計算`;
+  if(result.remaining===0)$('basis').textContent+=' — 想定寿命に達しました。';
   const percent=(result.fraction*100).toFixed(1);
   $('progress-label').textContent=`${dateFormat.format(result.end)}まで`;
   $('progress-fill').style.width=percent+'%';
@@ -64,8 +64,8 @@ function openSettings(){
   genders.forEach(gender=>{$(`gender-${gender}`).checked=state.profile?.gender===gender;});
   $('lifespan').value=state.profile?.years??'';
   $('lifespan-help').textContent=state.profile
-    ? '保存した寿命です。性別を選び直すと自動入力されます。'
-    : '性別を選んで自動入力するか、寿命を直接入力してください。';
+    ? '保存した想定寿命です。性別を選び直すと自動入力されます。'
+    : '性別を選んで自動入力するか、想定寿命を直接入力してください。';
   $('form-error').textContent='';
   $('reset').hidden=!state.profile;
   settings.showModal();
@@ -73,10 +73,10 @@ function openSettings(){
 settings.addEventListener('cancel',event=>{if(needsSetup())event.preventDefault();});
 genders.forEach(gender=>$(`gender-${gender}`).addEventListener('change',()=>{
   const average=AVERAGE_LIFESPAN[selectedGender()];
-  const years=average===undefined?undefined:Math.round(average);
+  const years=average;
   $('lifespan').value=years??'';
   $('lifespan-help').textContent=years
-    ? `平均寿命を四捨五入した${years}歳を入力しました。変更できます。`
+    ? `平均寿命の${years}歳を入力しました。変更できます。`
     : '性別を選ぶと平均寿命を自動入力します。';
   $('form-error').textContent='';
 }));
@@ -88,7 +88,7 @@ document.querySelectorAll('[data-about]').forEach(button=>button.addEventListene
 $('settings-form').addEventListener('submit',event=>{
   event.preventDefault();
   const birthday=$('birthday').value,years=Number($('lifespan').value),gender=selectedGender();
-  if(!calculate(birthday,years)){$('form-error').textContent='今日以前の生年月日と、1〜120歳の整数の寿命を入力してください。';return;}
+  if(!calculate(birthday,years)){$('form-error').textContent='今日以前の生年月日と、1〜120歳の想定寿命（小数可）を入力してください。';return;}
   if(!genders.has(gender)){$('form-error').textContent='性別を選択してください。';return;}
   state.profile={birthday,gender,years};const saved=save();render();
   document.querySelector('.hero').prepend(document.querySelector('.hourglass-scene'));
@@ -101,7 +101,7 @@ $('settings-form').addEventListener('submit',event=>{
 });
 $('settings-status').textContent=storageWorks?'':'このブラウザでは設定を保存できません。開いている間のみ保持します。';
 $('reset').addEventListener('click',()=>{
-  if(!confirm('生年月日・性別・寿命の設定を削除しますか？'))return;
+  if(!confirm('生年月日・性別・想定寿命の設定を削除しますか？'))return;
   state={profile:null};
   try{localStorage.removeItem(KEY);}catch{}
   $('settings-status').textContent='保存したデータを削除しました';settings.close();render();openSettings();

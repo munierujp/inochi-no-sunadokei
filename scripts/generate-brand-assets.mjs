@@ -45,7 +45,7 @@ await sharp(Buffer.from(banner(true))).png().toFile(path.join(assets,'og-banner.
 await sharp(Buffer.from(banner(false))).png().toFile(path.join(assets,'og-banner-logo-only.png'));
 if(!['assets/og-banner.png','assets/og-banner-logo-only.png'].includes(config.socialImage))throw new Error('Unknown socialImage');
 
-const manifest={id:'./',name:'命の砂時計',short_name:'命の砂時計',lang:'ja',description:'生年月日と寿命から、残り時間を表示するアプリ。',start_url:'./',scope:'./',display:'standalone',background_color:'#f5f2eb',theme_color:'#f5f2eb',icons:[{src:'assets/icon-192.png',sizes:'192x192',type:'image/png',purpose:'any'},{src:'assets/icon-512.png',sizes:'512x512',type:'image/png',purpose:'any'},{src:'assets/icon-maskable-512.png',sizes:'512x512',type:'image/png',purpose:'maskable'}]};
+const manifest={id:'./',name:'命の砂時計',short_name:'命の砂時計',lang:'ja',description:'生年月日と想定寿命から、残り時間を表示するアプリ。',start_url:'./',scope:'./',display:'standalone',background_color:'#f5f2eb',theme_color:'#f5f2eb',icons:[{src:'assets/icon-192.png',sizes:'192x192',type:'image/png',purpose:'any'},{src:'assets/icon-512.png',sizes:'512x512',type:'image/png',purpose:'any'},{src:'assets/icon-maskable-512.png',sizes:'512x512',type:'image/png',purpose:'maskable'}]};
 await writeFile(path.join(dist,'site.webmanifest'),JSON.stringify(manifest,null,2)+'\n');
 const metadata=`<!-- brand-metadata:start -->
 <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48">
@@ -62,7 +62,7 @@ const metadata=`<!-- brand-metadata:start -->
 <meta property="og:locale" content="ja_JP">
 <meta property="og:site_name" content="命の砂時計">
 <meta property="og:title" content="命の砂時計">
-<meta property="og:description" content="生年月日と寿命から、残り時間を表示するアプリ。">
+<meta property="og:description" content="生年月日と想定寿命から、残り時間を表示するアプリ。">
 <meta property="og:url" content="${escape(url('/'))}">
 <meta property="og:image" content="${escape(url(config.socialImage))}">
 <meta property="og:image:type" content="image/png">
@@ -78,7 +78,7 @@ const metadata=`<!-- brand-metadata:start -->
 <meta name="twitter:site" content="@munieru_jp">
 <meta name="twitter:creator" content="@munieru_jp">
 <meta name="twitter:title" content="命の砂時計">
-<meta name="twitter:description" content="生年月日と寿命から、残り時間を表示するアプリ。">
+<meta name="twitter:description" content="生年月日と想定寿命から、残り時間を表示するアプリ。">
 <meta name="twitter:image" content="${escape(url(config.socialImage))}">
 <meta name="twitter:image:alt" content="命の砂時計のロゴ${config.socialImage==='assets/og-banner.png'?'と砂時計':''}">
 <!-- brand-metadata:end -->`;

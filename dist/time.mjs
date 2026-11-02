@@ -7,9 +7,15 @@ export function parseBirthday(value) {
   return date.getFullYear() === y && date.getMonth() === m-1 && date.getDate() === d ? date : null;
 }
 export function deadline(birth, years) {
-  const y = birth.getFullYear() + years;
-  const last = new Date(y, birth.getMonth()+1, 0).getDate();
-  return new Date(y, birth.getMonth(), Math.min(birth.getDate(),last));
+  const whole=Math.floor(years);
+  const anniversary=age=>{
+    const y=birth.getFullYear()+age;
+    const last=new Date(y,birth.getMonth()+1,0).getDate();
+    return new Date(y,birth.getMonth(),Math.min(birth.getDate(),last));
+  };
+  const start=anniversary(whole);
+  const next=anniversary(whole+1);
+  return new Date(start.getTime()+(next-start)*(years-whole));
 }
 function addCalendarMonths(date, months){
   const first=new Date(date.getFullYear(),date.getMonth()+months,1);
@@ -18,7 +24,7 @@ function addCalendarMonths(date, months){
 }
 export function calculate(birthday, years, now = new Date()) {
   const birth = parseBirthday(birthday);
-  if (!birth || birth > now || !Number.isInteger(years) || years < 1 || years > 120) return null;
+  if (!birth || birth > now || !Number.isFinite(years) || years < 1 || years > 120) return null;
   const end = deadline(birth, years);
   const remaining = Math.max(0, end - now);
   const fraction = Math.min(1,Math.max(0,(now-birth)/(end-birth)));

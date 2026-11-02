@@ -3,7 +3,7 @@
   "name": "命の砂時計",
   "short_name": "命の砂時計",
   "lang": "ja",
-  "description": "生年月日と寿命から、残り時間を表示するアプリ。",
+  "description": "生年月日と想定寿命から、残り時間を表示するアプリ。",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

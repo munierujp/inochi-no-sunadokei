@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {calculate} from '../dist/time.mjs';
+import {calculate,deadline,parseBirthday} from '../dist/time.mjs';
 
 test('remaining days, weeks, months and years express the same deadline',()=>{
   const result=calculate('2000-02-28',30,new Date(2029,1,28));
@@ -37,4 +37,15 @@ test('compound countdown handles month ends and the last second',()=>{
   assert.deepEqual(calculate('2000-02-28',30,new Date(2030,0,31)).duration,{years:0,months:1,days:0,hours:0,minutes:0,seconds:0});
   assert.deepEqual(calculate('2000-02-28',30,new Date(2030,0,31,12)).duration,{years:0,months:0,days:27,hours:12,minutes:0,seconds:0});
   assert.deepEqual(calculate('2000-01-01',30,new Date(2029,11,31,23,59,59)).duration,{years:0,months:0,days:0,hours:0,minutes:0,seconds:1});
+});
+
+test('decimal lifespan interpolates between birthdays without rounding the age',()=>{
+  const birth=parseBirthday('2000-01-01');
+  const start=deadline(birth,81),next=deadline(birth,82);
+  const result=calculate('2000-01-01',81.35,new Date(2026,0,1));
+  assert.ok(result.end>start&&result.end<next);
+  assert.ok(Math.abs(result.end.getTime()-(start.getTime()+(next-start)*.35))<2);
+  const leapStart=deadline(birth,24),leapEnd=deadline(birth,25);
+  assert.ok(Math.abs(deadline(birth,24.5).getTime()-(leapStart.getTime()+(leapEnd-leapStart)*.5))<2);
+  for(const value of [NaN,Infinity,-1,0,120.01])assert.equal(calculate('2000-01-01',value),null);
 });
