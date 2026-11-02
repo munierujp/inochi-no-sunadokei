@@ -64,6 +64,7 @@ function openSettings(){
     $('onboarding-footer').append(document.querySelector('footer'));
   }
   $('settings-title').textContent=initial?'初期設定':'設定';
+  $('settings-submit').firstChild.textContent=initial?'はじめる ':'保存する ';
   $('birthday').value=state.profile?.birthday||'';
   genders.forEach(gender=>{$(`gender-${gender}`).checked=state.profile?.gender===gender;});
   $('lifespan').value=state.profile?.years??'';
