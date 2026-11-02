@@ -51,35 +51,45 @@ function render(){
   document.querySelector('.sand-stream').style.display=result.remaining>0?'':'none';
 
 }
-function birthdayValue(){
-  const value=$('birthday').value.normalize('NFKC').trim();
-  const match=value.match(/^([0-9]{4})([0-9]{2})([0-9]{2})$/)||value.match(/^([0-9]{4})[-/]([0-9]{1,2})[-/]([0-9]{1,2})$/);
-  return match?`${match[1]}-${match[2].padStart(2,'0')}-${match[3].padStart(2,'0')}`:'';
-}
+const birthIds=['birth-year','birth-month','birth-day'];
+const birthLabels=['年','月','日'];
+function birthdayValues(){return birthIds.map(id=>$(id).value.normalize('NFKC').trim());}
 function clearBirthdayErrors(){
-  $('birthday').setAttribute('aria-invalid','false');
+  birthIds.forEach(id=>{$(id).setAttribute('aria-invalid','false');});
   $('birthday-error').textContent='';
 }
 function validateBirthday(){
-  const birthday=birthdayValue();
+  const values=birthdayValues();
+  const [year,month,day]=values;
   let message='';
-  if(!$('birthday').value.trim())message='生年月日を入力してください。';
-  else if(!birthday)message='生年月日は西暦8桁で入力してください。例：19900123';
-  else{
-    const [year,month,day]=birthday.split('-').map(Number);
-    const date=new Date(year,month-1,day);
-    if(year<1900)message='生年月日は1900年以降の日付を入力してください。';
-    else if(date.getFullYear()!==year||date.getMonth()!==month-1||date.getDate()!==day)message='生年月日は実在する日付を入力してください。';
-    else if(date>new Date())message='生年月日は今日以前の日付を入力してください。';
+  let invalid=[];
+  const missing=values.map((value,i)=>value?'':birthLabels[i]).filter(Boolean);
+  if(missing.length){
+    message=missing.length===3?'生年月日を入力してください。':`生年月日の${missing.join('・')}を入力してください。`;
+    invalid=values.map((value,i)=>value?-1:i).filter(i=>i>=0);
+  }else if(!/^[0-9]{4}$/.test(year)||Number(year)<1900){
+    message='生年は1900年以降の西暦4桁で入力してください。';invalid=[0];
+  }else if(!/^[0-9]{1,2}$/.test(month)||Number(month)<1||Number(month)>12){
+    message='月は1〜12の数字で入力してください。';invalid=[1];
+  }else if(!/^[0-9]{1,2}$/.test(day)||Number(day)<1||Number(day)>31){
+    message='日は1〜31の数字で入力してください。';invalid=[2];
+  }else{
+    const birthday=`${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
+    const date=new Date(Number(year),Number(month)-1,Number(day));
+    if(date.getFullYear()!==Number(year)||date.getMonth()!==Number(month)-1||date.getDate()!==Number(day)){
+      message='生年月日は実在する日付を入力してください。';invalid=[0,1,2];
+    }else if(date>new Date()){
+      message='生年月日は今日以前の日付を入力してください。';invalid=[0,1,2];
+    }
   }
-  $('birthday').setAttribute('aria-invalid',String(!!message));
+  birthIds.forEach((id,i)=>$(id).setAttribute('aria-invalid',String(invalid.includes(i))));
   $('birthday-error').textContent=message;
   return !message;
 }
-$('birthday').addEventListener('input',()=>{
+birthIds.forEach(id=>$(id).addEventListener('input',()=>{
   clearBirthdayErrors();
   $('form-error').textContent='';
-});
+}));
 const settings=$('settings');
 function needsSetup(){return !state.profile||!genders.has(state.profile.gender);}
 function openSettings(){
@@ -93,7 +103,10 @@ function openSettings(){
   }
   $('settings-title').textContent=initial?'初期設定':'設定';
   $('settings-submit').firstChild.textContent=initial?'はじめる ':'保存 ';
-  $('birthday').value=state.profile?.birthday.replaceAll('-','')||'';
+  const [year='',month='',day='']=(state.profile?.birthday||'').split('-');
+  $('birth-year').value=year;
+  $('birth-month').value=month;
+  $('birth-day').value=day;
   clearBirthdayErrors();
   genders.forEach(gender=>{$(`gender-${gender}`).checked=state.profile?.gender===gender;});
   $('lifespan').value=state.profile?.years??'';
@@ -120,7 +133,8 @@ document.querySelectorAll('dialog .close').forEach(button=>button.addEventListen
 document.querySelectorAll('[data-about]').forEach(button=>button.addEventListener('click',()=>$('about').showModal()));
 $('settings-form').addEventListener('submit',event=>{
   event.preventDefault();
-  const birthday=birthdayValue();
+  const [year,month,day]=birthdayValues();
+  const birthday=`${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
   const years=Number($('lifespan').value),gender=selectedGender();
   if(!validateBirthday()){
     $('form-error').textContent=$('birthday-error').textContent;
