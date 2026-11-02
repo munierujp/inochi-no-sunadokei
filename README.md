@@ -1,6 +1,6 @@
 # 命の砂時計
 
-まずローカルで制作・確認し、完成後に `munieru.app` のサブドメインへ配置するウェブアプリです。サブドメイン名・ホスティング先は未決定です。現在は未公開で、DNSの変更も行っていません。
+人生の残り時間を砂時計で表示するウェブアプリです。公開先は `https://inochi-no-sunadokei.munieru.app/`、ホスティングはGitHub Pagesです。独自ドメインの到達性はDNSとHTTPS証明書の準備状況に依存します。
 
 ## ローカルで起動
 
@@ -23,11 +23,13 @@ npm run dev
 
 ## 公開の方針
 
-候補URLは `inochi.munieru.app` などです。名前はまだ確定していません。
+[公開リポジトリ](https://github.com/munierujp/inochi-no-sunadokei) の `main` へのpushで、`.github/workflows/pages.yml` がビルド・検証後に `dist/` をGitHub Pagesへ配信します。Actions画面から手動実行もできます。
 
-ローカル版を確認した後、利用するホスティング先を決め、`dist/` の配置とサブドメインのDNS・HTTPSを設定します。現時点で特定のホスティングサービスに依存する構成や、自動デプロイは設けていません。
+標準の `ubuntu-latest` ランナーとNode.js 22を使い、有料の大型ランナーは使用しません。Actionsの依存はコミットSHAで固定し、ビルドキャッシュは使用せず、公開用アーティファクトの保存期間は1日です。
 
-以前Sitesに非公開・未デプロイのプロジェクト枠を登録しましたが、このローカル版はそれに接続していません。
+DNSは `inochi-no-sunadokei.munieru.app` のCNAMEを `munierujp.github.io` に向けます。GitHub側のPages設定にも同じ独自ドメインを登録します。HTTPS証明書の準備完了後にHTTPS強制を有効にします。
+
+以前Sitesに非公開・未デプロイのプロジェクト枠を登録しましたが、このアプリの配信には使用していません。
 
 ## データと計算
 
@@ -65,7 +67,7 @@ npm ci
 npm run assets
 ```
 
-`site.config.json` の `origin` は現在 `http://127.0.0.1:4173` です。公開先が決まったらそのHTTPSオリジンに変更し、`npm run build` を実行してください。canonical・og:url・og:image・twitter:imageがまとめて更新されます。サブドメインのDNSやホスティングはこの操作では変更しません。
+`site.config.json` の `origin` は `https://inochi-no-sunadokei.munieru.app` です。公開先を変更する場合はこの値を変更し、`npm run build` を実行してください。ビルド時の `SITE_ORIGIN` 環境変数で一時的に上書きすることもできます。canonical・og:url・og:image・twitter:imageがまとめて更新されます。サブドメインのDNSやホスティングはこの操作では変更しません。
 
 ロゴのみのバナーを採用する場合は同ファイルの `socialImage` を `assets/og-banner-logo-only.png` に変更して `npm run build` で再生成します。
 

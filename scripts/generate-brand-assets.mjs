@@ -8,7 +8,7 @@ const dist=path.join(root,'dist');
 const assets=path.join(dist,'assets');
 await mkdir(assets,{recursive:true});
 const config=JSON.parse(await readFile(path.join(root,'site.config.json'),'utf8'));
-const origin=new URL(config.origin);
+const origin=new URL(process.env.SITE_ORIGIN||config.origin);
 if(!['http:','https:'].includes(origin.protocol)||origin.username||origin.password||origin.search||origin.hash||origin.pathname!=='/')throw new Error('origin must be an HTTP(S) origin without a path or credentials');
 const url=relative=>new URL(relative,origin).href;
 const escape=value=>value.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
