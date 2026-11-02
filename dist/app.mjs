@@ -14,6 +14,7 @@ function render(){
   const profile=state.profile;
   if(!profile){
     $('share-x').hidden=true;
+    $('milestone-message').textContent='';
     $('days').textContent='—';
     $('upper-sand').setAttribute('y',130);
     $('upper-sand').setAttribute('height',122);
@@ -32,7 +33,8 @@ function render(){
   $('demo-badge').hidden=!!state.profile;
   $('main-setup').firstChild.textContent=state.profile?'設定変更 ':'設定 ';
   $('basis').textContent=`${dateFormat.format(result.birth)}生まれ・想定寿命 ${profile.years}歳で計算`;
-  if(result.remaining===0)$('basis').textContent+=' — 想定寿命に達しました。';
+  const milestone=result.remaining===0?'想定寿命を超えて、今日を迎えました。\nこれからも健やかな日々が続きますように。':'';
+  if($('milestone-message').textContent!==milestone)$('milestone-message').textContent=milestone;
   const percent=(result.fraction*100).toFixed(1);
   $('progress-label').textContent=`${dateFormat.format(result.end)}まで`;
   $('progress-fill').style.width=percent+'%';

@@ -183,3 +183,6 @@ footer { justify-content: center; }
 
 #form-error:empty { display: none; }
 #form-error:focus { outline: 2px solid #a44832; outline-offset: 4px; }
+
+.milestone-message { margin: 0; white-space: pre-line; }
+.milestone-message:not(:empty) { margin-top: 24px; padding: 18px 16px; border-block: 1px solid var(--sand); color: var(--ink); font: 16px/1.9 var(--serif); overflow-wrap: anywhere; }

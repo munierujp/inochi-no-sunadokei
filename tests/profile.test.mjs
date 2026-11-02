@@ -6,7 +6,8 @@ import {calculate,AVERAGE_LIFESPAN} from '../dist/time.mjs';
 import {buildXShareURL} from '../dist/share.mjs';
 
 const source=(await readFile(new URL('../dist/app.mjs',import.meta.url),'utf8')).replace(/^import[^\n]+\n/gm,'');
-function app(profile){
+function app(profile,compute=calculate){
+  let tick;
   const elements=new Map();
   const element=id=>{
     if(!elements.has(id))elements.set(id,{value:'',textContent:'',hidden:false,checked:false,open:false,style:{},firstChild:{},events:{},classList:{toggle(){},remove(){}},setCustomValidity(message){this.validationMessage=message;},setAttribute(name,value){this[name]=value;},append(){},prepend(){},focus(){},showModal(){this.open=true;},close(){this.open=false;},dispatchEvent(event){this.events[event.type]?.(event);},addEventListener(name,fn){this.events[name]=fn;}});
@@ -16,9 +17,9 @@ function app(profile){
   vm.runInNewContext(source,{
     document:{getElementById:element,querySelector:element,querySelectorAll(){return [];},body:element('body'),addEventListener(){}},
     localStorage:{getItem(){return saved;},setItem(key,value){saved=value;},removeItem(){saved=null;}},
-    calculate,AVERAGE_LIFESPAN,buildXShareURL,Event,Intl,Date,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(){}
+    calculate:compute,AVERAGE_LIFESPAN,buildXShareURL,Event,Intl,Date,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(fn){tick=fn;}
   });
-  return {element,saved:()=>JSON.parse(saved)};
+  return {element,saved:()=>JSON.parse(saved),tick:()=>tick()};
 }
 
 test('sex selection fills exact average and decimal settings survive saving and reload',()=>{
@@ -129,4 +130,22 @@ test('birthday arrow keys step fields, respect limits and revalidate calendar da
   assert.equal(key('birth-month','ArrowDown',{isComposing:true}),false);
   assert.equal(key('birth-month','ArrowDown',{ctrlKey:true}),false);
   element('birth-day').value='';assert.equal(key('birth-day','ArrowUp'),false);
+});
+
+test('milestone message appears at the deadline and clears when lifespan is extended',()=>{
+  const profile={birthday:'1990-01-01',gender:'male',years:80};
+  let reached=false;
+  const current=app(profile,(...args)=>{
+    const result=calculate(...args);
+    return result&&reached?{...result,remaining:0}:result;
+  });
+  assert.equal(current.element('milestone-message').textContent,'');
+  reached=true;current.tick();
+  assert.match(current.element('milestone-message').textContent,/今日を迎えました/);
+  assert.match(current.element('milestone-message').textContent,/健やかな日々/);
+  reached=false;current.tick();
+  assert.equal(current.element('milestone-message').textContent,'');
+  const expired=app({birthday:'1900-01-01',gender:'female',years:80});
+  assert.match(expired.element('milestone-message').textContent,/今日を迎えました/);
+  assert.equal(app().element('milestone-message').textContent,'');
 });
