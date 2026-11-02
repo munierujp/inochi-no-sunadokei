@@ -133,6 +133,23 @@ document.querySelectorAll('[data-settings]').forEach(button=>button.addEventList
 $('share-x').addEventListener('click',render);
 document.querySelectorAll('dialog .close').forEach(button=>button.addEventListener('click',()=>button.closest('dialog').close()));
 document.querySelectorAll('[data-about]').forEach(button=>button.addEventListener('click',()=>$('about').showModal()));
+const about=$('about');
+if(!('closedBy' in about)){
+  let startedOutside=false;
+  const outside=event=>{
+    if(event.target!==about)return false;
+    const rect=about.getBoundingClientRect();
+    return event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;
+  };
+  about.addEventListener('pointerdown',event=>{startedOutside=outside(event);});
+  about.addEventListener('pointercancel',()=>{startedOutside=false;});
+  about.addEventListener('click',event=>{
+    if(startedOutside&&outside(event))about.close();
+    startedOutside=false;
+  });
+  about.addEventListener('close',()=>{startedOutside=false;});
+}
+
 $('settings-form').addEventListener('submit',event=>{
   event.preventDefault();
   const [year,month,day]=birthdayValues();

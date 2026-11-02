@@ -92,3 +92,19 @@ test('complete birthday is validated during input and accepts fullwidth numbers'
   submit();
   assert.equal(current.saved().profile.birthday,'2000-02-29');
 });
+
+test('About fallback dismisses backdrop taps but preserves content clicks and drags',()=>{
+  const {element}=app();
+  const about=element('about');
+  about.getBoundingClientRect=()=>({left:100,right:300,top:100,bottom:400});
+  const event=(x,y,target=about)=>({target,clientX:x,clientY:y});
+  about.showModal();
+  about.events.pointerdown(event(110,110));about.events.click(event(110,110));
+  assert.equal(about.open,true);
+  about.events.pointerdown(event(120,120,{}));about.events.click(event(10,10));
+  assert.equal(about.open,true);
+  about.events.pointerdown(event(10,10));about.events.pointercancel();about.events.click(event(10,10));
+  assert.equal(about.open,true);
+  about.events.pointerdown(event(10,10));about.events.click(event(10,10));
+  assert.equal(about.open,false);
+});
