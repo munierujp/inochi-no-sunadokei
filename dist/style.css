@@ -185,3 +185,7 @@ footer { justify-content: center; }
 
 .milestone-message { margin: 0; white-space: pre-line; }
 .milestone-message:not(:empty) { margin-top: 24px; padding: 18px 16px; border-block: 1px solid var(--sand); color: var(--ink); font: 16px/1.9 var(--serif); overflow-wrap: anywhere; }
+
+#about h3 { margin: 24px 0 8px; font-size: 16px; font-weight: 500; }
+#about h3 + p { margin-top: 0; }
+#about p a { text-decoration: underline; text-underline-offset: 3px; }
