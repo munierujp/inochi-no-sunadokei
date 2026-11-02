@@ -75,9 +75,8 @@ dialog input, dialog select { display: block; width: 100%; min-width: 0; max-wid
 .full { width: 100%; margin-top: 16px; }
 .reset { display: flex; margin: 12px auto 0; text-decoration: underline; text-underline-offset: 4px; }
 #form-error { color: #a44832; font-size: 13px; }
-.onboarding { overflow: hidden; }
 .onboarding > header, .onboarding > main, .onboarding > footer { display: none; }
-.onboarding #settings[open] { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 24px; width: 100%; max-width: none; height: 100vh; height: 100dvh; max-height: 100vh; max-height: 100dvh; margin: 0; padding: 20px var(--gutter); padding-left: max(var(--gutter), env(safe-area-inset-left)); padding-right: max(var(--gutter), env(safe-area-inset-right)); padding-top: max(20px, env(safe-area-inset-top)); padding-bottom: max(24px, env(safe-area-inset-bottom)); border: 0; border-radius: 0; box-shadow: none; }
+.onboarding #settings[open] { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 24px; width: 100%; max-width: none; position: static; inset: auto; height: auto; min-height: 100vh; min-height: 100svh; max-height: none; overflow: visible; overscroll-behavior: auto; margin: 0; padding: 20px var(--gutter); padding-left: max(var(--gutter), env(safe-area-inset-left)); padding-right: max(var(--gutter), env(safe-area-inset-right)); padding-top: max(20px, env(safe-area-inset-top)); padding-bottom: max(24px, env(safe-area-inset-bottom)); border: 0; border-radius: 0; box-shadow: none; }
 .onboarding #settings::backdrop { background: var(--paper); backdrop-filter: none; }
 .onboarding #settings form { width: 100%; min-width: 0; max-width: 470px; margin: 0 auto; padding: clamp(16px, 4vw, 28px); border: 1px solid var(--line); border-radius: 6px; background: #fbf9f380; }
 .onboarding #settings .dialog-top .close, .onboarding #settings .reset { display: none; }

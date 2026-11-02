@@ -10,7 +10,7 @@ function app(profile,compute=calculate){
   let tick;
   const elements=new Map();
   const element=id=>{
-    if(!elements.has(id))elements.set(id,{value:'',textContent:'',hidden:false,checked:false,open:false,style:{},firstChild:{},events:{},classList:{toggle(){},remove(){}},setCustomValidity(message){this.validationMessage=message;},setAttribute(name,value){this[name]=value;},append(){},prepend(){},focus(){},showModal(){this.open=true;},close(){this.open=false;},dispatchEvent(event){this.events[event.type]?.(event);},addEventListener(name,fn){this.events[name]=fn;}});
+    if(!elements.has(id))elements.set(id,{value:'',textContent:'',hidden:false,checked:false,open:false,style:{},firstChild:{},events:{},classList:{toggle(){},remove(){}},setCustomValidity(message){this.validationMessage=message;},setAttribute(name,value){this[name]=value;},append(){},prepend(){},focus(){},show(){this.open=true;this.modal=false;},showModal(){this.open=true;this.modal=true;},close(){this.open=false;},dispatchEvent(event){this.events[event.type]?.(event);},addEventListener(name,fn){this.events[name]=fn;}});
     return elements.get(id);
   };
   let saved=profile?JSON.stringify({profile}):null;
@@ -148,4 +148,17 @@ test('milestone message appears at the deadline and clears when lifespan is exte
   const expired=app({birthday:'1900-01-01',gender:'female',years:80});
   assert.match(expired.element('milestone-message').textContent,/今日を迎えました/);
   assert.equal(app().element('milestone-message').textContent,'');
+});
+
+test('initial setup opens non-modally and closes after saving',()=>{
+  const current=app();
+  assert.equal(current.element('settings').open,true);
+  assert.equal(current.element('settings').modal,false);
+  current.element('birth-year').value='1990';
+  current.element('birth-month').value='1';
+  current.element('birth-day').value='1';
+  current.element('gender-male').checked=true;
+  current.element('lifespan').value='81.35';
+  current.element('settings-form').events.submit({preventDefault(){}});
+  assert.equal(current.element('settings').open,false);
 });

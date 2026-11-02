@@ -127,7 +127,9 @@ function openSettings(){
     : '性別を選んで自動入力するか、想定寿命を直接入力してください。';
   $('form-error').textContent='';
   $('reset').hidden=!state.profile;
-  settings.showModal();
+  // Initial setup scrolls with the document, avoiding fixed-dialog caret offsets on iOS.
+  if(initial)settings.show();
+  else settings.showModal();
 }
 settings.addEventListener('cancel',event=>{if(needsSetup())event.preventDefault();});
 genders.forEach(gender=>$(`gender-${gender}`).addEventListener('change',()=>{
