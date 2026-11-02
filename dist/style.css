@@ -170,16 +170,11 @@ footer { justify-content: center; }
   .orbit-two { width: min(88%, 360px); }
 }
 
-.birthday-field { min-width: 0; margin: 20px 0 0; padding: 0; border: 0; }
-.birthday-field legend { padding: 0; font-size: 14px; }
-.birthday-field legend small { margin-left: 6px; font-size: 11px; color: var(--muted); }
-.birthday-inputs { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 12px; margin-top: 8px; }
-.birthday-inputs label { min-width: 0; margin: 0; font-size: 12px; }
-.birthday-inputs input { margin-top: 6px; }
 
 .field-error { margin: 8px 0 0; color: #a1362a; font-size: 12px; }
 .field-error:empty { display: none; }
-.birthday-inputs input[aria-invalid='true'] { border-color: #a1362a; }
 
 #form-error:empty { display: none; }
 #form-error:focus { outline: 2px solid #a44832; outline-offset: 4px; }
+
+#birthday[aria-invalid='true'] { border-color: #a1362a; }

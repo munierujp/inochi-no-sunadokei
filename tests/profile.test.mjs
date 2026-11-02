@@ -26,9 +26,7 @@ test('sex selection fills exact average and decimal settings survive saving and 
   current.element('gender-male').checked=true;
   current.element('gender-male').events.change();
   assert.equal(current.element('lifespan').value,81.35);
-  current.element('birth-year').value='1990';
-  current.element('birth-month').value='1';
-  current.element('birth-day').value='1';
+  current.element('birthday').value='19900101';
   current.element('settings-form').events.submit({preventDefault(){}});
   assert.equal(current.saved().profile.years,81.35);
   assert.ok(app(current.saved().profile).element('basis').textContent.includes('81.35'));
@@ -44,47 +42,45 @@ test('previously saved integer lifespan stays unchanged',()=>{
   assert.ok(current.element('basis').textContent.includes('想定寿命 81歳'));
 });
 
-test('birthday fields reject invalid and future dates and preserve leap days',()=>{
+test('birthday rejects invalid, incomplete and future dates and saves a real leap day',()=>{
   const current=app();
   current.element('gender-male').checked=true;
   current.element('lifespan').value='81.35';
-  const submit=(year,month,day)=>{
-    current.element('birth-year').value=year;
-    current.element('birth-month').value=month;
-    current.element('birth-day').value=day;
+  const submit=value=>{
+    current.element('birthday').value=value;
     current.element('settings-form').events.submit({preventDefault(){}});
   };
-  for(const date of [['1990','2','30'],['2999','1','1'],['','1','1'],['1899','1','1'],['1990','','1']]){
-    submit(...date);
+  for(const value of ['19900230','20010229','19900431','29990101','','199001','18990101','19901301','19900001','19900100','1990abcd']){
+    submit(value);
     assert.equal(current.saved(),null);
-    assert.ok(current.element('form-error').textContent);
+    assert.ok(current.element('birthday-error').textContent);
+    assert.equal(current.element('birthday')['aria-invalid'],'true');
+    assert.equal(current.element('birthday').value,value);
   }
-  submit('2000','2','29');
+  submit('20000229');
   assert.equal(current.saved().profile.birthday,'2000-02-29');
 });
 
-test('birthday validation waits for submission, identifies errors and accepts fullwidth numbers',()=>{
+test('single birthday field accepts pasted formats, fullwidth digits and autofill dates',()=>{
+  for(const value of [' ２００００２２９ ','2000/02/29','2000-02-29','2000/2/29','２０００／０２／２９']){
+    const current=app();
+    current.element('birthday').value=value;
+    current.element('gender-male').checked=true;
+    current.element('lifespan').value='81.35';
+    current.element('settings-form').events.submit({preventDefault(){}});
+    assert.equal(current.saved().profile.birthday,'2000-02-29');
+  }
+});
+
+test('birthday validation waits for submission and clears feedback when editing',()=>{
   const current=app();
-  const edit=(id,value)=>{current.element(id).value=value;current.element(id).events.input();};
-  const submit=()=>current.element('settings-form').events.submit({preventDefault(){}});
-  edit('birth-year','2000');edit('birth-month','13');edit('birth-day','30');
+  current.element('birthday').value='20000230';
+  current.element('birthday').events.input();
   assert.equal(current.element('birthday-error').textContent,'');
-  submit();
-  assert.match(current.element('birthday-error').textContent,/月/);
-  assert.equal(current.element('birth-month')['aria-invalid'],'true');
-  assert.equal(current.element('birth-year')['aria-invalid'],'false');
-  edit('birth-month','2');
-  assert.equal(current.element('birthday-error').textContent,'');
-  submit();
+  current.element('settings-form').events.submit({preventDefault(){}});
   assert.match(current.element('birthday-error').textContent,/実在/);
-  for(const part of ['year','month','day'])assert.equal(current.element('birth-'+part)['aria-invalid'],'true');
-  edit('birth-day','');submit();
-  assert.match(current.element('birthday-error').textContent,/日を入力/);
-  edit('birth-year','２９９９');edit('birth-month','１');edit('birth-day','１');submit();
-  assert.match(current.element('birthday-error').textContent,/今日以前/);
-  edit('birth-year',' ２０００ ');edit('birth-month','０２');edit('birth-day','２９');
-  current.element('gender-male').checked=true;
-  current.element('lifespan').value='81.35';
-  submit();
-  assert.equal(current.saved().profile.birthday,'2000-02-29');
+  current.element('birthday').value='20000229';
+  current.element('birthday').events.input();
+  assert.equal(current.element('birthday-error').textContent,'');
+  assert.equal(current.element('birthday')['aria-invalid'],'false');
 });
