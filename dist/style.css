@@ -148,3 +148,11 @@ footer { justify-content: center; }
 .duration-part strong { font: clamp(2rem, 1.4rem + 2vw, 2.8rem) Georgia, serif; font-variant-numeric: tabular-nums; }
 .duration-part small { font-size: 12px; color: var(--muted); }
 @media (min-width: 760px) { .duration-countdown { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+
+/* Keep the logo and help control on a single header row. */
+.header, .onboarding .onboarding-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 12px; }
+.header .brand { min-width: 0; }
+.header-actions { flex-wrap: nowrap; justify-content: flex-end; gap: 4px; }
+.icon-button { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 10px; border: 1px solid transparent; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; }
+.icon-button:focus-visible { outline: 2px solid #8f693e; outline-offset: 3px; }
+@media (hover: hover) { .icon-button:hover { background: #e8e6dc; color: var(--ink); } }

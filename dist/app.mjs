@@ -26,7 +26,7 @@ function render(){
   $('days').textContent=nf.format(result.duration.days);
   ['hours','minutes','seconds'].forEach(key=>$(key).textContent=String(result.duration[key]).padStart(2,'0'));
   $('demo-badge').hidden=!!state.profile;
-  $('main-setup').firstChild.textContent=state.profile?'設定を変更する ':'設定する ';
+  $('main-setup').firstChild.textContent=state.profile?'設定変更 ':'設定 ';
   $('basis').textContent=`${dateFormat.format(result.birth)}生まれ・寿命 ${profile.years}歳で計算`;
   if(result.remaining===0)$('basis').textContent+=' — 設定した寿命に達しました。';
   const percent=(result.fraction*100).toFixed(1);
@@ -59,7 +59,7 @@ function openSettings(){
     $('onboarding-footer').append(document.querySelector('footer'));
   }
   $('settings-title').textContent=initial?'初期設定':'設定';
-  $('settings-submit').firstChild.textContent=initial?'はじめる ':'保存する ';
+  $('settings-submit').firstChild.textContent=initial?'はじめる ':'保存 ';
   $('birthday').value=state.profile?.birthday||'';
   genders.forEach(gender=>{$(`gender-${gender}`).checked=state.profile?.gender===gender;});
   $('lifespan').value=state.profile?.years??'';
