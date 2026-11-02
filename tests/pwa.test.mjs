@@ -18,7 +18,7 @@ function worker(origin='https://example.test/app/'){
   };
   const self={registration:{scope:origin},location:new URL('sw.js',origin),clients:{async claim(){claimed++;}},async skipWaiting(){skipped++;},addEventListener(name,fn){handlers.set(name,fn);}};
   vm.runInNewContext(sw,{self,caches,URL,Request,Set,fetch:async request=>{if(!online)throw new Error('offline');return new Response(`live:${new URL(request.url).pathname}`);}});
-  return {store,requests,get skipped(){return skipped;},get claimed(){return claimed;},set online(value){online=value;},
+  return {store,requests,hasHandler:name=>handlers.has(name),get skipped(){return skipped;},get claimed(){return claimed;},set online(value){online=value;},
     async event(name,data={}){const pending=[];let response;handlers.get(name)({...data,waitUntil(p){pending.push(p);},respondWith(p){response=p;}});await Promise.all(pending);return response;},
     async get(path,mode='cors',method='GET'){return this.event('fetch',{request:{url:new URL(path,origin).href,mode,method}});}
   };
@@ -48,9 +48,10 @@ test('failed install removes incomplete new cache and preserves the active one',
   await assert.rejects(w.event('install'),/offline/);assert.deepEqual([...w.store.keys()],[old]);
 });
 
-test('updates activate only on the expected explicit message',async()=>{
-  const w=worker();await w.event('message',{data:{type:'other'}});assert.equal(w.skipped,0);
-  await w.event('message',{data:{type:'ACTIVATE_UPDATE'}});assert.equal(w.skipped,1);
+test('new versions do not force activation while existing pages remain open',async()=>{
+  const w=worker();await w.event('install');
+  assert.equal(w.skipped,0);
+  assert.equal(w.hasHandler('message'),false);
 });
 
 test('local development prefers current network files and falls back offline',async()=>{
@@ -68,22 +69,22 @@ test('manifest and precache files exist with usable installation metadata',async
   for(const icon of manifest.icons)await access(new URL(icon.src,dist));
 });
 
-test('browser controls offer install and accept updates before reload',async()=>{
+test('install control works while a waiting update never reloads the page',async()=>{
   const source=await readFile(new URL('pwa.mjs',dist),'utf8');
   const makeButton=()=>({hidden:true,disabled:false,events:{},addEventListener(name,fn){this.events[name]=fn;}});
-  const install=makeButton(),update=makeButton(),windowEvents={},workerEvents={},registrationEvents={};
+  const install=makeButton(),windowEvents={},workerEvents={},registrationEvents={};
   let message,reloaded=false,prompted=false;
   const registration={waiting:{postMessage(value){message=value;}},addEventListener(name,fn){registrationEvents[name]=fn;},async update(){}};
-  const document={querySelectorAll(selector){return selector==='[data-pwa-install]'?[install]:[update];},addEventListener(){},dispatchEvent(){}};
+  const document={querySelectorAll(selector){assert.equal(selector,'[data-pwa-install]');return [install];},addEventListener(){},dispatchEvent(){}};
   const window={isSecureContext:true,matchMedia(){return {matches:false};},addEventListener(name,fn){windowEvents[name]=fn;}};
   const navigator={serviceWorker:{controller:{},async register(url,options){assert.equal(url,'./sw.js');assert.equal(options.updateViaCache,'none');return registration;},addEventListener(name,fn){workerEvents[name]=fn;}}};
   const location={protocol:'https:',reload(){reloaded=true;}};
   await vm.runInNewContext(`(async()=>{${source}\n})()`,{document,window,navigator,location,Event,console});
-  assert.equal(update.hidden,false);assert.equal(install.hidden,true);
+  assert.equal(install.hidden,true);
   windowEvents.beforeinstallprompt({preventDefault(){},async prompt(){prompted=true;},userChoice:Promise.resolve({outcome:'accepted'})});
   assert.equal(install.hidden,false);await install.events.click();assert.equal(prompted,true);assert.equal(install.hidden,true);
-  update.events.click();assert.equal(message.type,'ACTIVATE_UPDATE');assert.equal(update.disabled,true);
-  workerEvents.controllerchange();assert.equal(reloaded,true);
+  assert.equal(message,undefined);assert.equal(reloaded,false);
+  assert.equal(workerEvents.controllerchange,undefined);
 });
 
 test('first service-worker claim does not reload the setup screen',async()=>{
@@ -95,5 +96,5 @@ test('first service-worker claim does not reload the setup screen',async()=>{
     navigator:{serviceWorker:{controller:null,async register(){return registration;},addEventListener(name,fn){controllerchange=fn;}}},
     location:{protocol:'https:',reload(){reloaded=true;}},Event,console
   });
-  controllerchange();assert.equal(reloaded,false);
+  assert.equal(controllerchange,undefined);assert.equal(reloaded,false);
 });

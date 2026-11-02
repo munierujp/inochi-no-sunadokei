@@ -1,4 +1,4 @@
-const VERSION = "74046d4d698ca626";
+const VERSION = "81d6e60088cd5bfb";
 const FILES = ["index.html","style.css","app.mjs","time.mjs","share.mjs","pwa.mjs","site.webmanifest","favicon.svg","favicon.ico","apple-touch-icon.png","assets/logo-wordmark-a.png","assets/icon-192.png","assets/icon-512.png","assets/icon-maskable-512.png"];
 const SCOPE = self.registration.scope;
 const PREFIX = `life-hourglass:${SCOPE}:`;
@@ -26,10 +26,6 @@ self.addEventListener('activate', event => {
     await Promise.all(names.filter(name => name.startsWith(PREFIX) && name !== CACHE).map(name => caches.delete(name)));
     await self.clients.claim();
   })());
-});
-
-self.addEventListener('message', event => {
-  if (event.data?.type === 'ACTIVATE_UPDATE') event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('fetch', event => {
