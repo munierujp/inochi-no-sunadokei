@@ -159,9 +159,6 @@ function openSettings(){
   clearBirthdayErrors();
   genders.forEach(gender=>{$(`gender-${gender}`).checked=state.profile?.gender===gender;});
   $('lifespan').value=state.profile?.years??'';
-  $('lifespan-help').textContent=state.profile
-    ? '保存した想定寿命です。性別を選び直すと自動入力されます。'
-    : '性別を選んで自動入力するか、想定寿命を直接入力してください。';
   $('form-error').textContent='';
   $('reset').hidden=!state.profile;
   // Initial setup scrolls with the document, avoiding fixed-dialog caret offsets on iOS.
@@ -175,9 +172,6 @@ genders.forEach(gender=>$(`gender-${gender}`).addEventListener('change',()=>{
   const average=AVERAGE_LIFESPAN[selectedGender()];
   const years=average;
   $('lifespan').value=years??'';
-  $('lifespan-help').textContent=years
-    ? `平均寿命の${years}歳を入力しました。変更できます。`
-    : '性別を選ぶと平均寿命を自動入力します。';
   $('form-error').textContent='';
   renderPreview();
 }));
@@ -224,14 +218,14 @@ $('settings-form').addEventListener('submit',event=>{
   $('onboarding-footer').hidden=true;
   document.body.classList.remove('onboarding');settings.close();
   $('header-settings').focus();
-  $('settings-status').textContent=saved?'設定を保存しました':'このブラウザでは保存できません。開いている間のみ保持します。';
+  $('settings-status').textContent=saved?'':'このブラウザでは保存できません。開いている間のみ保持します。';
 });
 $('settings-status').textContent=storageWorks?'':'このブラウザでは設定を保存できません。開いている間のみ保持します。';
 $('reset').addEventListener('click',()=>{
   if(!confirm('生年月日・性別・想定寿命の設定を削除しますか？'))return;
   state={profile:null};
   try{localStorage.removeItem(KEY);}catch{}
-  $('settings-status').textContent='保存したデータを削除しました';settings.close();render();openSettings();
+  $('settings-status').textContent='';settings.close();render();openSettings();
 });
 render();setInterval(()=>{if(!document.hidden){render();renderPreview();}},1000);
 if(needsSetup())openSettings();else document.body.classList.remove('onboarding');

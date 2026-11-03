@@ -193,3 +193,5 @@ footer { justify-content: center; }
 #onboarding-summary p { margin: 0; }
 #onboarding-summary-label { font-size: 12px; }
 #onboarding-summary #onboarding-duration { margin-top: 6px; color: var(--ink); font-size: 16px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+#settings-status:empty { display: none; }
