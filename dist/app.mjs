@@ -13,6 +13,9 @@ const dateFormat=new Intl.DateTimeFormat('ja-JP',{year:'numeric',month:'long',da
 function render(){
   const profile=state.profile;
   if(!profile){
+    $('countdown-display').hidden=false;
+    $('remaining-conversions').hidden=false;
+    $('hero-title').textContent='人生の残り時間';
     $('share-x').hidden=true;
     $('milestone-message').textContent='';
     $('days').textContent='—';
@@ -24,6 +27,10 @@ function render(){
   }
   const result=calculate(profile.birthday,profile.years);
   if(!result)return;
+  const reached=result.remaining===0;
+  $('countdown-display').hidden=reached;
+  $('remaining-conversions').hidden=reached;
+  $('hero-title').textContent=reached?'想定寿命に達しました':'人生の残り時間';
   $('share-x').href=buildXShareURL(result.duration,document.querySelector('link[rel="canonical"]')?.href);
   $('share-x').hidden=false;
   $('countdown-years').textContent=nf.format(result.duration.years);

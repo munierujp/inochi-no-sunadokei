@@ -140,10 +140,17 @@ test('milestone message appears at the deadline and clears when lifespan is exte
     return result&&reached?{...result,remaining:0}:result;
   });
   assert.equal(current.element('milestone-message').textContent,'');
+  assert.equal(current.element('countdown-display').hidden,false);
   reached=true;current.tick();
+  assert.equal(current.element('countdown-display').hidden,true);
+  assert.equal(current.element('remaining-conversions').hidden,true);
+  assert.equal(current.element('hero-title').textContent,'想定寿命に達しました');
   assert.match(current.element('milestone-message').textContent,/今日を迎えました/);
   assert.match(current.element('milestone-message').textContent,/健やかな日々/);
   reached=false;current.tick();
+  assert.equal(current.element('countdown-display').hidden,false);
+  assert.equal(current.element('remaining-conversions').hidden,false);
+  assert.equal(current.element('hero-title').textContent,'人生の残り時間');
   assert.equal(current.element('milestone-message').textContent,'');
   const expired=app({birthday:'1900-01-01',gender:'female',years:80});
   assert.match(expired.element('milestone-message').textContent,/今日を迎えました/);
