@@ -204,3 +204,18 @@ test('year 100, 99 and 1 February 20 all validate while editing and save exactly
     assert.equal(current.saved().profile.birthday,`${year.padStart(4,'0')}-02-20`);
   }
 });
+
+test('settings backdrop dismisses without saving but initial setup stays open',()=>{
+  const profile={birthday:'1990-01-01',gender:'male',years:80};
+  for(const saved of [undefined,profile]){
+    const current=app(saved);
+    const settings=current.element('settings');
+    settings.getBoundingClientRect=()=>({left:100,right:300,top:100,bottom:400});
+    if(saved)settings.showModal();
+    current.element('lifespan').value='90';
+    const event={target:settings,clientX:10,clientY:10};
+    settings.events.pointerdown(event);settings.events.click(event);
+    assert.equal(settings.open,!saved);
+    assert.deepEqual(current.saved(),saved?{profile}:null);
+  }
+});

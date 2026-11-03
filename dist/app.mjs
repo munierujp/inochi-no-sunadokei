@@ -127,6 +127,7 @@ function openSettings(){
   $('form-error').textContent='';
   $('reset').hidden=!state.profile;
   // Initial setup scrolls with the document, avoiding fixed-dialog caret offsets on iOS.
+  settings.setAttribute('closedby',initial?'none':'any');
   if(initial)settings.show();
   else settings.showModal();
 }
@@ -144,22 +145,24 @@ document.querySelectorAll('[data-settings]').forEach(button=>button.addEventList
 $('share-x').addEventListener('click',render);
 document.querySelectorAll('dialog .close').forEach(button=>button.addEventListener('click',()=>button.closest('dialog').close()));
 document.querySelectorAll('[data-about]').forEach(button=>button.addEventListener('click',()=>$('about').showModal()));
-const about=$('about');
-if(!('closedBy' in about)){
+function enableLightDismiss(dialog,canClose=()=>true){
+  if('closedBy' in dialog)return;
   let startedOutside=false;
   const outside=event=>{
-    if(event.target!==about)return false;
-    const rect=about.getBoundingClientRect();
+    if(event.target!==dialog)return false;
+    const rect=dialog.getBoundingClientRect();
     return event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom;
   };
-  about.addEventListener('pointerdown',event=>{startedOutside=outside(event);});
-  about.addEventListener('pointercancel',()=>{startedOutside=false;});
-  about.addEventListener('click',event=>{
-    if(startedOutside&&outside(event))about.close();
+  dialog.addEventListener('pointerdown',event=>{startedOutside=outside(event);});
+  dialog.addEventListener('pointercancel',()=>{startedOutside=false;});
+  dialog.addEventListener('click',event=>{
+    if(startedOutside&&outside(event)&&canClose())dialog.close();
     startedOutside=false;
   });
-  about.addEventListener('close',()=>{startedOutside=false;});
+  dialog.addEventListener('close',()=>{startedOutside=false;});
 }
+enableLightDismiss($('about'));
+enableLightDismiss(settings,()=>!needsSetup());
 
 $('settings-form').addEventListener('submit',event=>{
   event.preventDefault();
