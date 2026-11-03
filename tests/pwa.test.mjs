@@ -98,3 +98,19 @@ test('first service-worker claim does not reload the setup screen',async()=>{
   });
   assert.equal(controllerchange,undefined);assert.equal(reloaded,false);
 });
+
+test('local preview unregisters only this app scope and removes only its offline caches',async()=>{
+  const source=await readFile(new URL('pwa.mjs',dist),'utf8');
+  const removed=[],unregistered=[];
+  await vm.runInNewContext(`(async()=>{${source}\n})()`,{
+    document:{querySelectorAll(){return [];},addEventListener(){}},
+    window:{isSecureContext:true,addEventListener(){},caches:{async keys(){return ['life-hourglass:http://127.0.0.1:4173/:old','other-app'];},async delete(name){removed.push(name);}}},
+    navigator:{serviceWorker:{async getRegistrations(){return [
+      {scope:'http://127.0.0.1:4173/',async unregister(){unregistered.push('app');}},
+      {scope:'http://127.0.0.1:4173/other/',async unregister(){unregistered.push('other');}}
+    ];},async register(){throw Error('Local preview must not register an offline worker');}}},
+    location:{hostname:'127.0.0.1',href:'http://127.0.0.1:4173/#',protocol:'http:'},URL,console
+  });
+  assert.deepEqual(unregistered,['app']);
+  assert.deepEqual(removed,['life-hourglass:http://127.0.0.1:4173/:old']);
+});

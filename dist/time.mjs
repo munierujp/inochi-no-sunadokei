@@ -1,26 +1,35 @@
 export const DAY = 86400000;
 export const AVERAGE_LIFESPAN = Object.freeze({male:81.35,female:87.33});
+function calendarDate(year, month, day) {
+  const date=new Date(0);
+  date.setHours(0,0,0,0);
+  date.setFullYear(year,month,day);
+  return date;
+}
 export function parseBirthday(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
   const [y,m,d] = value.split('-').map(Number);
-  const date = new Date(y, m-1, d);
+  if(y<1)return null;
+  const date = calendarDate(y, m-1, d);
   return date.getFullYear() === y && date.getMonth() === m-1 && date.getDate() === d ? date : null;
 }
 export function deadline(birth, years) {
   const whole=Math.floor(years);
   const anniversary=age=>{
     const y=birth.getFullYear()+age;
-    const last=new Date(y,birth.getMonth()+1,0).getDate();
-    return new Date(y,birth.getMonth(),Math.min(birth.getDate(),last));
+    const last=calendarDate(y,birth.getMonth()+1,0).getDate();
+    return calendarDate(y,birth.getMonth(),Math.min(birth.getDate(),last));
   };
   const start=anniversary(whole);
   const next=anniversary(whole+1);
   return new Date(start.getTime()+(next-start)*(years-whole));
 }
 function addCalendarMonths(date, months){
-  const first=new Date(date.getFullYear(),date.getMonth()+months,1);
-  const last=new Date(first.getFullYear(),first.getMonth()+1,0).getDate();
-  return new Date(first.getFullYear(),first.getMonth(),Math.min(date.getDate(),last),date.getHours(),date.getMinutes(),date.getSeconds(),date.getMilliseconds());
+  const first=calendarDate(date.getFullYear(),date.getMonth()+months,1);
+  const last=calendarDate(first.getFullYear(),first.getMonth()+1,0).getDate();
+  const result=calendarDate(first.getFullYear(),first.getMonth(),Math.min(date.getDate(),last));
+  result.setHours(date.getHours(),date.getMinutes(),date.getSeconds(),date.getMilliseconds());
+  return result;
 }
 export function calculate(birthday, years, now = new Date()) {
   const birth = parseBirthday(birthday);

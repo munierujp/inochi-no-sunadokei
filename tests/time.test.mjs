@@ -49,3 +49,14 @@ test('decimal lifespan interpolates between birthdays without rounding the age',
   assert.ok(Math.abs(deadline(birth,24.5).getTime()-(leapStart.getTime()+(leapEnd-leapStart)*.5))<2);
   for(const value of [NaN,Infinity,-1,0,120.01])assert.equal(calculate('2000-01-01',value),null);
 });
+
+test('early AD years are not shifted into the twentieth century',()=>{
+  for(const year of [1,4,99,100,999,1899]){
+    const result=calculate(`${String(year).padStart(4,'0')}-01-01`,80);
+    assert.equal(result.birth.getFullYear(),year);
+    assert.equal(result.end.getFullYear(),year+80);
+  }
+  assert.equal(calculate('0000-01-01',80),null);
+  assert.equal(calculate('0001-02-29',80),null);
+  assert.equal(calculate('0004-02-29',80).birth.getFullYear(),4);
+});

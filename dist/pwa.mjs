@@ -20,10 +20,22 @@ installButtons.forEach(button=>button.addEventListener('click',async()=>{
 
 if('serviceWorker' in navigator && window.isSecureContext && ['http:','https:'].includes(location.protocol)){
   try {
-    const registration=await navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'});
-    const checkUpdate=()=>registration.update().catch(()=>{});
-    window.addEventListener('online',checkUpdate);
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate();});
+    const local=['localhost','127.0.0.1','[::1]'].includes(location.hostname);
+    if(local){
+      const scope=new URL('./',location.href).href;
+      const registrations=await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.filter(registration=>registration.scope===scope).map(registration=>registration.unregister()));
+      if('caches' in window){
+        const prefix=`life-hourglass:${scope}:`;
+        const names=await window.caches.keys();
+        await Promise.all(names.filter(name=>name.startsWith(prefix)).map(name=>window.caches.delete(name)));
+      }
+    }else{
+      const registration=await navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'});
+      const checkUpdate=()=>registration.update().catch(()=>{});
+      window.addEventListener('online',checkUpdate);
+      document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate();});
+    }
   } catch(error) {
     console.warn('オフライン機能を有効にできませんでした。',error);
   }

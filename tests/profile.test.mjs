@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
-import {calculate,AVERAGE_LIFESPAN} from '../dist/time.mjs';
+import {calculate,parseBirthday,AVERAGE_LIFESPAN} from '../dist/time.mjs';
 import {buildXShareURL} from '../dist/share.mjs';
 
 const source=(await readFile(new URL('../dist/app.mjs',import.meta.url),'utf8')).replace(/^import[^\n]+\n/gm,'');
@@ -17,7 +17,7 @@ function app(profile,compute=calculate){
   vm.runInNewContext(source,{
     document:{getElementById:element,querySelector:element,querySelectorAll(){return [];},body:element('body'),addEventListener(){}},
     localStorage:{getItem(){return saved;},setItem(key,value){saved=value;},removeItem(){saved=null;}},
-    calculate:compute,AVERAGE_LIFESPAN,buildXShareURL,Event,Intl,Date,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(fn){tick=fn;}
+    calculate:compute,parseBirthday,AVERAGE_LIFESPAN,buildXShareURL,Event,Intl,Date,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(fn){tick=fn;}
   });
   return {element,saved:()=>JSON.parse(saved),tick:()=>tick()};
 }
@@ -55,7 +55,7 @@ test('birthday fields reject invalid and future dates and preserve leap days',()
     current.element('birth-day').value=day;
     current.element('settings-form').events.submit({preventDefault(){}});
   };
-  for(const date of [['1990','2','30'],['2999','1','1'],['','1','1'],['1899','1','1'],['1990','','1']]){
+  for(const date of [['1990','2','30'],['2999','1','1'],['','1','1'],['1990','','1']]){
     submit(...date);
     assert.equal(current.saved(),null);
     assert.ok(current.element('form-error').textContent);
@@ -125,7 +125,7 @@ test('birthday arrow keys step fields, respect limits and revalidate calendar da
   key('birth-year','ArrowUp');assert.match(element('birthday-error').textContent,/実在/);
   element('birth-month').value='12';key('birth-month','ArrowUp');assert.equal(element('birth-month').value,'12');
   element('birth-day').value='1';key('birth-day','ArrowDown');assert.equal(element('birth-day').value,'1');
-  element('birth-year').value='1900';key('birth-year','ArrowDown');assert.equal(element('birth-year').value,'1900');
+  element('birth-year').value='1';key('birth-year','ArrowDown');assert.equal(element('birth-year').value,'1');
   element('birth-month').value='０２';key('birth-month','ArrowUp');assert.equal(element('birth-month').value,'3');
   assert.equal(key('birth-month','ArrowDown',{isComposing:true}),false);
   assert.equal(key('birth-month','ArrowDown',{ctrlKey:true}),false);
@@ -161,4 +161,46 @@ test('initial setup opens non-modally and closes after saving',()=>{
   current.element('lifespan').value='81.35';
   current.element('settings-form').events.submit({preventDefault(){}});
   assert.equal(current.element('settings').open,false);
+});
+
+test('birth years from one to four digits save without a 1900 cutoff',()=>{
+  for(const year of ['1','99','999','1899']){
+    const current=app();
+    current.element('birth-year').value=year;
+    current.element('birth-month').value='1';
+    current.element('birth-day').value='1';
+    current.element('gender-male').checked=true;
+    current.element('lifespan').value='80';
+    current.element('settings-form').events.submit({preventDefault(){}});
+    assert.equal(current.saved().profile.birthday,`${year.padStart(4,'0')}-01-01`);
+  }
+});
+
+test('99 February 24 is accepted during input and saved as AD 99',()=>{
+  const current=app();
+  for(const [id,value] of [['birth-year','99'],['birth-month','2'],['birth-day','24']]){
+    current.element(id).value=value;
+    current.element(id).events.input();
+  }
+  assert.equal(current.element('birthday-error').textContent,'');
+  current.element('gender-male').checked=true;
+  current.element('lifespan').value='80';
+  current.element('settings-form').events.submit({preventDefault(){}});
+  assert.equal(current.saved().profile.birthday,'0099-02-24');
+  assert.equal(calculate(current.saved().profile.birthday,80).birth.getFullYear(),99);
+});
+
+test('year 100, 99 and 1 February 20 all validate while editing and save exactly',()=>{
+  for(const year of ['100','99','1']){
+    const current=app();
+    for(const [id,value] of [['birth-year',year],['birth-month','2'],['birth-day','20']]){
+      current.element(id).value=value;
+      current.element(id).events.input();
+    }
+    assert.equal(current.element('birthday-error').textContent,'',year);
+    current.element('gender-male').checked=true;
+    current.element('lifespan').value='80';
+    current.element('settings-form').events.submit({preventDefault(){}});
+    assert.equal(current.saved().profile.birthday,`${year.padStart(4,'0')}-02-20`);
+  }
 });

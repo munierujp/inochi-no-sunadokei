@@ -1,4 +1,4 @@
-import {calculate,AVERAGE_LIFESPAN} from './time.mjs';
+import {calculate,parseBirthday,AVERAGE_LIFESPAN} from './time.mjs?v=ad-years-2';
 import {buildXShareURL} from './share.mjs';
 const $ = id => document.getElementById(id);
 const KEY='inochi-hourglass-v1';
@@ -65,16 +65,16 @@ function validateBirthday(){
   if(missing.length){
     message=missing.length===3?'生年月日を入力してください。':`生年月日の${missing.join('・')}を入力してください。`;
     invalid=values.map((value,i)=>value?-1:i).filter(i=>i>=0);
-  }else if(!/^[0-9]{4}$/.test(year)||Number(year)<1900){
-    message='生年は1900年以降の西暦4桁で入力してください。';invalid=[0];
+  }else if(!/^[0-9]{1,4}$/.test(year)||Number(year)<1){
+    message='生年は1〜4桁の西暦（1年以降）で入力してください。';invalid=[0];
   }else if(!/^[0-9]{1,2}$/.test(month)||Number(month)<1||Number(month)>12){
     message='月は1〜12の数字で入力してください。';invalid=[1];
   }else if(!/^[0-9]{1,2}$/.test(day)||Number(day)<1||Number(day)>31){
     message='日は1〜31の数字で入力してください。';invalid=[2];
   }else{
-    const birthday=`${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
-    const date=new Date(Number(year),Number(month)-1,Number(day));
-    if(date.getFullYear()!==Number(year)||date.getMonth()!==Number(month)-1||date.getDate()!==Number(day)){
+    const birthday=`${year.padStart(4,'0')}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
+    const date=parseBirthday(birthday);
+    if(!date){
       message='生年月日は実在する日付を入力してください。';invalid=[0,1,2];
     }else if(date>new Date()){
       message='生年月日は今日以前の日付を入力してください。';invalid=[0,1,2];
@@ -86,7 +86,7 @@ function validateBirthday(){
 }
 birthIds.forEach(id=>$(id).addEventListener('input',()=>{
   const [year,month,day]=birthdayValues();
-  if(year.length>=4&&month&&day&&month!=='0'&&day!=='0')validateBirthday();
+  if(year&&month&&day&&month!=='0'&&day!=='0')validateBirthday();
   else clearBirthdayErrors();
   $('form-error').textContent='';
 }));
@@ -96,7 +96,7 @@ birthIds.forEach((id,index)=>$(id).addEventListener('keydown',event=>{
   const value=input.value.normalize('NFKC').trim();
   if(!/^[0-9]+$/.test(value))return;
   event.preventDefault();
-  const minimum=index===0?1900:1;
+  const minimum=1;
   const maximum=index===0?new Date().getFullYear():index===1?12:31;
   input.value=String(Math.min(maximum,Math.max(minimum,Number(value)+(event.key==='ArrowUp'?1:-1))));
   input.dispatchEvent(new Event('input',{bubbles:true}));
@@ -164,7 +164,7 @@ if(!('closedBy' in about)){
 $('settings-form').addEventListener('submit',event=>{
   event.preventDefault();
   const [year,month,day]=birthdayValues();
-  const birthday=`${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
+  const birthday=`${year.padStart(4,'0')}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
   const years=Number($('lifespan').value),gender=selectedGender();
   if(!validateBirthday()){
     $('form-error').textContent=$('birthday-error').textContent;
