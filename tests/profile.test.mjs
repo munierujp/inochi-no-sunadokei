@@ -45,6 +45,54 @@ test('previously saved integer lifespan stays unchanged',()=>{
   assert.ok(current.element('basis').textContent.includes('想定寿命 81歳'));
 });
 
+test('manual lifespan previews, saves and reloads without selecting a gender',()=>{
+  const current=app();
+  assert.equal(current.element('gender-none').checked,true);
+  for(const [id,value] of [['birth-year','1990'],['birth-month','1'],['birth-day','1'],['lifespan','90.5']]){
+    current.element(id).value=value;current.element(id).events.input();
+  }
+  assert.equal(current.element('onboarding-summary').hidden,false);
+  assert.equal(current.saved(),null);
+  current.element('settings-form').events.submit({preventDefault(){}});
+  assert.deepEqual(current.saved(),{profile:{birthday:'1990-01-01',gender:'none',years:90.5}});
+  assert.equal(current.element('settings').open,false);
+  const reloaded=app(current.saved().profile);
+  assert.equal(reloaded.element('settings').open,false);
+  reloaded.element('header-settings').events.click();
+  assert.equal(reloaded.element('gender-none').checked,true);
+  assert.equal(reloaded.element('lifespan').value,90.5);
+});
+
+test('legacy genderless profiles open directly and retain their settings',()=>{
+  const profile={birthday:'1990-01-01',years:80};
+  const current=app(profile);
+  assert.equal(current.element('settings').open,false);
+  current.element('header-settings').events.click();
+  assert.equal(current.element('settings').modal,true);
+  assert.equal(current.element('gender-none').checked,true);
+  assert.equal(current.element('birth-year').value,'1990');
+  assert.equal(current.element('lifespan').value,80);
+});
+
+test('opting out of gender keeps manual lifespan and still validates its range',()=>{
+  const current=app({birthday:'1990-01-01',gender:'male',years:81.35});
+  current.element('header-settings').events.click();
+  current.element('lifespan').value='95';
+  current.element('gender-male').checked=false;
+  current.element('gender-none').checked=true;
+  current.element('gender-none').events.change();
+  assert.equal(current.element('lifespan').value,'95');
+  const submit=()=>current.element('settings-form').events.submit({preventDefault(){}});
+  for(const years of ['', '0', '121']){
+    current.element('lifespan').value=years;submit();
+    assert.match(current.element('form-error').textContent,/想定寿命/);
+    assert.equal(current.saved().profile.years,81.35);
+  }
+  current.element('lifespan').value='95';submit();
+  assert.equal(current.saved().profile.gender,'none');
+  assert.equal(current.saved().profile.years,95);
+});
+
 test('birthday fields reject invalid and future dates and preserve leap days',()=>{
   const current=app();
   current.element('gender-male').checked=true;

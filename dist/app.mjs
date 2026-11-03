@@ -3,7 +3,7 @@ import {buildXShareURL} from './share.mjs';
 import {setupImageExport} from './image-card.mjs';
 const $ = id => document.getElementById(id);
 const KEY='inochi-hourglass-v1';
-const genders=new Set(['male','female']);
+const genders=new Set(['male','female','none']);
 function selectedGender(){return [...genders].find(gender=>$(`gender-${gender}`).checked)||'';}
 let state={profile:null};
 let storageWorks=true;
@@ -74,7 +74,7 @@ function renderPreview(){
   }
   const [year,month,day]=birthdayValues();
   const birthday=`${year.padStart(4,'0')}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
-  const valid=/^[0-9]{1,4}$/.test(year)&&/^[0-9]{1,2}$/.test(month)&&/^[0-9]{1,2}$/.test(day)&&selectedGender();
+  const valid=/^[0-9]{1,4}$/.test(year)&&/^[0-9]{1,2}$/.test(month)&&/^[0-9]{1,2}$/.test(day);
   const result=valid?calculate(birthday,Number($('lifespan').value)):null;
   $('onboarding-summary').hidden=!result;
   if(!result){
@@ -143,7 +143,7 @@ birthIds.forEach((id,index)=>$(id).addEventListener('keydown',event=>{
   input.dispatchEvent(new Event('input',{bubbles:true}));
 }));
 const settings=$('settings');
-function needsSetup(){return !state.profile||!genders.has(state.profile.gender);}
+function needsSetup(){return !state.profile;}
 function openSettings(){
   const initial=needsSetup();
   document.body.classList.toggle('onboarding',initial);
@@ -160,7 +160,8 @@ function openSettings(){
   $('birth-month').value=month;
   $('birth-day').value=day;
   clearBirthdayErrors();
-  genders.forEach(gender=>{$(`gender-${gender}`).checked=state.profile?.gender===gender;});
+  const gender=genders.has(state.profile?.gender)?state.profile.gender:'none';
+  genders.forEach(value=>{$(`gender-${value}`).checked=value===gender;});
   $('lifespan').value=state.profile?.years??'';
   $('form-error').textContent='';
   $('reset').hidden=!state.profile;
@@ -173,8 +174,7 @@ function openSettings(){
 settings.addEventListener('cancel',event=>{if(needsSetup())event.preventDefault();});
 genders.forEach(gender=>$(`gender-${gender}`).addEventListener('change',()=>{
   const average=AVERAGE_LIFESPAN[selectedGender()];
-  const years=average;
-  $('lifespan').value=years??'';
+  if(average!==undefined)$('lifespan').value=average;
   $('form-error').textContent='';
   renderPreview();
 }));
@@ -220,8 +220,7 @@ $('settings-form').addEventListener('submit',event=>{
     return;
   }
   if(!calculate(birthday,years)){$('form-error').textContent='想定寿命は1〜120歳の数字で入力してください。';$('form-error').focus();return;}
-  if(!genders.has(gender)){$('form-error').textContent='性別を選択してください。';$('form-error').focus();return;}
-  state.profile={birthday,gender,years};const saved=save();render();
+  state.profile={birthday,gender:gender||'none',years};const saved=save();render();
   document.querySelector('.hero').prepend(document.querySelector('.hourglass-scene'));
   document.body.append(document.querySelector('footer'));
   $('onboarding-scene').hidden=true;
