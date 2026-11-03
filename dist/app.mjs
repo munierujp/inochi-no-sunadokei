@@ -31,7 +31,6 @@ function render(){
   $('days').textContent=nf.format(result.duration.days);
   ['hours','minutes','seconds'].forEach(key=>$(key).textContent=String(result.duration[key]).padStart(2,'0'));
   $('demo-badge').hidden=!!state.profile;
-  $('main-setup').firstChild.textContent=state.profile?'設定変更 ':'設定 ';
   $('basis').textContent=`${dateFormat.format(result.birth)}生まれ・想定寿命 ${profile.years}歳で計算`;
   const milestone=result.remaining===0?'想定寿命を超えて、今日を迎えました。\nこれからも健やかな日々が続きますように。':'';
   if($('milestone-message').textContent!==milestone)$('milestone-message').textContent=milestone;
@@ -114,7 +113,7 @@ function openSettings(){
     $('onboarding-footer').append(document.querySelector('footer'));
   }
   $('settings-title').textContent=initial?'初期設定':'設定';
-  $('settings-submit').firstChild.textContent=initial?'はじめる ':'保存 ';
+  $('settings-submit').firstChild.textContent=initial?'はじめる':'保存';
   const [year='',month='',day='']=(state.profile?.birthday||'').split('-');
   $('birth-year').value=year;
   $('birth-month').value=month;
@@ -180,7 +179,7 @@ $('settings-form').addEventListener('submit',event=>{
   $('onboarding-scene').hidden=true;
   $('onboarding-footer').hidden=true;
   document.body.classList.remove('onboarding');settings.close();
-  $('main-setup').focus();
+  $('header-settings').focus();
   $('settings-status').textContent=saved?'設定を保存しました':'このブラウザでは保存できません。開いている間のみ保持します。';
 });
 $('settings-status').textContent=storageWorks?'':'このブラウザでは設定を保存できません。開いている間のみ保持します。';
