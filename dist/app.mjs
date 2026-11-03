@@ -29,10 +29,11 @@ function render(){
   const result=calculate(profile.birthday,profile.years,now);
   if(!result)return;
   const reached=result.remaining===0;
+  const birthdayToday=result.birth.getMonth()===now.getMonth()&&result.birth.getDate()===now.getDate();
   $('countdown-display').hidden=reached;
   $('remaining-conversions').hidden=reached;
   $('hero-title').textContent=reached?'想定寿命に達しました':'人生の残り時間';
-  $('share-x').href=buildXShareURL(result.duration,document.querySelector('link[rel="canonical"]')?.href);
+  $('share-x').href=buildXShareURL(result.duration,document.querySelector('link[rel="canonical"]')?.href,{reached,birthdayToday});
   $('share-x').hidden=false;
   $('countdown-years').textContent=nf.format(result.duration.years);
   $('countdown-months').textContent=nf.format(result.duration.months);
@@ -40,7 +41,6 @@ function render(){
   ['hours','minutes','seconds'].forEach(key=>$(key).textContent=String(result.duration[key]).padStart(2,'0'));
   $('demo-badge').hidden=!!state.profile;
   $('basis').textContent=`${dateFormat.format(result.birth)}生まれ・想定寿命 ${profile.years}歳で計算`;
-  const birthdayToday=result.birth.getMonth()===now.getMonth()&&result.birth.getDate()===now.getDate();
   const messages=[];
   if(birthdayToday)messages.push('お誕生日おめでとうございます。\n新しい一年が、健やかで実りある日々になりますように。');
   if(reached)messages.push('想定寿命を超えて、今日を迎えました。\nこれからも健やかな日々が続きますように。');

@@ -17,7 +17,7 @@ function app(profile,compute=calculate,Clock=Date){
   vm.runInNewContext(source,{
     document:{getElementById:element,querySelector:element,querySelectorAll(){return [];},body:element('body'),addEventListener(){}},
     localStorage:{getItem(){return saved;},setItem(key,value){saved=value;},removeItem(){saved=null;}},
-    calculate:compute,parseBirthday,AVERAGE_LIFESPAN,buildXShareURL,Event,Intl,Date:Clock,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(fn){tick=fn;}
+    calculate:compute,parseBirthday,AVERAGE_LIFESPAN,buildXShareURL,Event,URL,Intl,Date:Clock,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(fn){tick=fn;}
   });
   return {element,saved:()=>JSON.parse(saved),tick:()=>tick()};
 }
@@ -234,12 +234,16 @@ test('birthday message follows the local calendar day and coexists with lifespan
   assert.equal(current.element('milestone-message').textContent,'');
   now=new Date(2026,1,24,0,0,0).getTime();current.tick();
   assert.match(current.element('milestone-message').textContent,/お誕生日おめでとう/);
+  assert.match(new URL(current.element('share-x').href).searchParams.get('text'),/本日、誕生日を迎えました/);
   now=new Date(2026,1,25,0,0,0).getTime();current.tick();
   assert.equal(current.element('milestone-message').textContent,'');
   now=new Date(2026,1,24).getTime();
   const expired=app({birthday:'1900-02-24',gender:'female',years:80},calculate,Clock);
   assert.match(expired.element('milestone-message').textContent,/お誕生日おめでとう/);
   assert.match(expired.element('milestone-message').textContent,/想定寿命を超えて/);
+  const shared=new URL(expired.element('share-x').href).searchParams.get('text');
+  assert.match(shared,/想定寿命を超えて/);
+  assert.ok(!shared.includes('0年'));
 });
 
 test('a February 29 birthday is celebrated only on February 29',()=>{
