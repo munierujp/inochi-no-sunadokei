@@ -6,7 +6,7 @@ import {calculate,parseBirthday,AVERAGE_LIFESPAN} from '../dist/time.mjs';
 import {buildXShareURL} from '../dist/share.mjs';
 
 const source=(await readFile(new URL('../dist/app.mjs',import.meta.url),'utf8')).replace(/^import[^\n]+\n/gm,'');
-function app(profile,compute=calculate){
+function app(profile,compute=calculate,Clock=Date){
   let tick;
   const elements=new Map();
   const element=id=>{
@@ -17,7 +17,7 @@ function app(profile,compute=calculate){
   vm.runInNewContext(source,{
     document:{getElementById:element,querySelector:element,querySelectorAll(){return [];},body:element('body'),addEventListener(){}},
     localStorage:{getItem(){return saved;},setItem(key,value){saved=value;},removeItem(){saved=null;}},
-    calculate:compute,parseBirthday,AVERAGE_LIFESPAN,buildXShareURL,Event,Intl,Date,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(fn){tick=fn;}
+    calculate:compute,parseBirthday,AVERAGE_LIFESPAN,buildXShareURL,Event,Intl,Date:Clock,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(fn){tick=fn;}
   });
   return {element,saved:()=>JSON.parse(saved),tick:()=>tick()};
 }
@@ -224,5 +224,31 @@ test('settings backdrop dismisses without saving but initial setup stays open',(
     settings.events.pointerdown(event);settings.events.click(event);
     assert.equal(settings.open,!saved);
     assert.deepEqual(current.saved(),saved?{profile}:null);
+  }
+});
+
+test('birthday message follows the local calendar day and coexists with lifespan message',()=>{
+  let now=new Date(2026,1,23,23,59,59).getTime();
+  class Clock extends Date {constructor(...args){super(...(args.length?args:[now]));}}
+  const current=app({birthday:'1994-02-24',gender:'male',years:81.35},calculate,Clock);
+  assert.equal(current.element('milestone-message').textContent,'');
+  now=new Date(2026,1,24,0,0,0).getTime();current.tick();
+  assert.match(current.element('milestone-message').textContent,/お誕生日おめでとう/);
+  now=new Date(2026,1,25,0,0,0).getTime();current.tick();
+  assert.equal(current.element('milestone-message').textContent,'');
+  now=new Date(2026,1,24).getTime();
+  const expired=app({birthday:'1900-02-24',gender:'female',years:80},calculate,Clock);
+  assert.match(expired.element('milestone-message').textContent,/お誕生日おめでとう/);
+  assert.match(expired.element('milestone-message').textContent,/想定寿命を超えて/);
+});
+
+test('a February 29 birthday is celebrated only on February 29',()=>{
+  let now=new Date(2024,1,29).getTime();
+  class Clock extends Date {constructor(...args){super(...(args.length?args:[now]));}}
+  const current=app({birthday:'2000-02-29',gender:'male',years:80},calculate,Clock);
+  assert.match(current.element('milestone-message').textContent,/お誕生日おめでとう/);
+  for(const value of [new Date(2025,1,28),new Date(2025,2,1)]){
+    now=value.getTime();current.tick();
+    assert.equal(current.element('milestone-message').textContent,'');
   }
 });

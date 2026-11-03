@@ -25,7 +25,8 @@ function render(){
     document.querySelector('.sand-stream').style.display='';
     return;
   }
-  const result=calculate(profile.birthday,profile.years);
+  const now=new Date();
+  const result=calculate(profile.birthday,profile.years,now);
   if(!result)return;
   const reached=result.remaining===0;
   $('countdown-display').hidden=reached;
@@ -39,7 +40,11 @@ function render(){
   ['hours','minutes','seconds'].forEach(key=>$(key).textContent=String(result.duration[key]).padStart(2,'0'));
   $('demo-badge').hidden=!!state.profile;
   $('basis').textContent=`${dateFormat.format(result.birth)}生まれ・想定寿命 ${profile.years}歳で計算`;
-  const milestone=result.remaining===0?'想定寿命を超えて、今日を迎えました。\nこれからも健やかな日々が続きますように。':'';
+  const birthdayToday=result.birth.getMonth()===now.getMonth()&&result.birth.getDate()===now.getDate();
+  const messages=[];
+  if(birthdayToday)messages.push('お誕生日おめでとうございます。\n新しい一年が、健やかで実りある日々になりますように。');
+  if(reached)messages.push('想定寿命を超えて、今日を迎えました。\nこれからも健やかな日々が続きますように。');
+  const milestone=messages.join('\n\n');
   if($('milestone-message').textContent!==milestone)$('milestone-message').textContent=milestone;
   const percent=(result.fraction*100).toFixed(1);
   $('progress-fill').style.width=percent+'%';
