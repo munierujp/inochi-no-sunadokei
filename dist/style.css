@@ -188,3 +188,8 @@ footer { justify-content: center; }
 #about h3 { margin: 24px 0 8px; font-size: 16px; font-weight: 500; }
 #about h3 + p { margin-top: 0; }
 #about p a { text-decoration: underline; text-underline-offset: 3px; }
+
+#onboarding-summary { margin: 8px auto 16px; max-width: 470px; text-align: center; }
+#onboarding-summary p { margin: 0; }
+#onboarding-summary-label { font-size: 12px; }
+#onboarding-summary #onboarding-duration { margin-top: 6px; color: var(--ink); font-size: 16px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }

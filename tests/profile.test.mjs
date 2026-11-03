@@ -15,7 +15,7 @@ function app(profile,compute=calculate,Clock=Date){
   };
   let saved=profile?JSON.stringify({profile}):null;
   vm.runInNewContext(source,{
-    document:{getElementById:element,querySelector:element,querySelectorAll(){return [];},body:element('body'),addEventListener(){}},
+    document:{getElementById:element,querySelector:element,querySelectorAll(selector){return selector==='[data-settings]'?[element('header-settings')]:[];},body:element('body'),addEventListener(){}},
     localStorage:{getItem(){return saved;},setItem(key,value){saved=value;},removeItem(){saved=null;}},
     calculate:compute,parseBirthday,AVERAGE_LIFESPAN,buildXShareURL,Event,URL,Intl,Date:Clock,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(fn){tick=fn;}
   });
@@ -255,4 +255,38 @@ test('a February 29 birthday is celebrated only on February 29',()=>{
     now=value.getTime();current.tick();
     assert.equal(current.element('milestone-message').textContent,'');
   }
+});
+
+test('initial setup previews valid draft without saving and hides invalid results',()=>{
+  const current=app();
+  assert.equal(current.element('onboarding-summary').hidden,true);
+  for(const [id,value] of [['birth-year','1990'],['birth-month','1'],['birth-day','1']]){
+    current.element(id).value=value;current.element(id).events.input();
+  }
+  current.element('gender-male').checked=true;
+  current.element('gender-male').events.change();
+  assert.match(current.element('onboarding-duration').textContent,/年.*ヶ月.*秒/);
+  assert.equal(current.element('onboarding-summary').hidden,false);
+  assert.equal(current.saved(),null);
+  const height=current.element('upper-sand').height;
+  current.element('lifespan').value='100';current.element('lifespan').events.input();
+  assert.notEqual(current.element('upper-sand').height,height);
+  assert.equal(current.saved(),null);
+  current.element('birth-month').value='13';current.element('birth-month').events.input();
+  assert.equal(current.element('onboarding-duration').textContent,'');
+});
+
+test('settings edits do not preview or alter the saved profile before saving',()=>{
+  const profile={birthday:'1990-01-01',gender:'male',years:80};
+  const current=app(profile);
+  const original=current.element('basis').textContent;
+  current.element('header-settings').events.click();
+  assert.equal(current.element('settings').modal,true);
+  assert.equal(current.element('onboarding-summary').hidden,true);
+  current.element('lifespan').value='1';current.element('lifespan').events.input();
+  assert.equal(current.element('onboarding-summary').hidden,true);
+  assert.equal(current.element('basis').textContent,original);
+  current.element('settings').close();current.tick();
+  assert.deepEqual(current.saved(),{profile});
+  assert.equal(current.element('basis').textContent,original);
 });

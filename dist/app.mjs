@@ -53,13 +53,38 @@ function render(){
   $('remaining-days').textContent=nf.format(result.days);
   $('months').textContent=nf.format(result.months);
   $('years').textContent=nf.format(result.years);
+  updateSand(result);
+}
+function updateSand(result){
   const upper=75+result.fraction*173;
   $('upper-sand').setAttribute('y',upper);
   $('upper-sand').setAttribute('height',Math.max(0,252-upper));
   const lower=446-result.fraction*134;
   $('lower-sand').setAttribute('d',`M86 446V${lower+24}Q180 ${lower-24} 274 ${lower+24}V446Z`);
   document.querySelector('.sand-stream').style.display=result.remaining>0?'':'none';
-
+}
+function renderPreview(){
+  if(!settings.open)return;
+  if(!needsSetup()){
+    $('onboarding-summary').hidden=true;
+    return;
+  }
+  const [year,month,day]=birthdayValues();
+  const birthday=`${year.padStart(4,'0')}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
+  const valid=/^[0-9]{1,4}$/.test(year)&&/^[0-9]{1,2}$/.test(month)&&/^[0-9]{1,2}$/.test(day)&&selectedGender();
+  const result=valid?calculate(birthday,Number($('lifespan').value)):null;
+  $('onboarding-summary').hidden=!result;
+  if(!result){
+    $('onboarding-duration').textContent='';
+    render();
+    return;
+  }
+  const d=result.duration;
+  $('onboarding-duration').textContent=result.remaining===0
+    ? '想定寿命に達しています。'
+    : `${d.years}年 ${d.months}ヶ月 ${d.days}日 ${d.hours}時間 ${d.minutes}分 ${d.seconds}秒`;
+  $('onboarding-summary-label').hidden=result.remaining===0;
+  updateSand(result);
 }
 const birthIds=['birth-year','birth-month','birth-day'];
 const birthLabels=['年','月','日'];
@@ -101,6 +126,7 @@ birthIds.forEach(id=>$(id).addEventListener('input',()=>{
   if(year&&month&&day&&month!=='0'&&day!=='0')validateBirthday();
   else clearBirthdayErrors();
   $('form-error').textContent='';
+  renderPreview();
 }));
 birthIds.forEach((id,index)=>$(id).addEventListener('keydown',event=>{
   if(event.isComposing||event.altKey||event.ctrlKey||event.metaKey||event.shiftKey||!['ArrowUp','ArrowDown'].includes(event.key))return;
@@ -121,7 +147,7 @@ function openSettings(){
   $('onboarding-scene').hidden=!initial;
   $('onboarding-footer').hidden=!initial;
   if(initial){
-    $('onboarding-scene').append(document.querySelector('.hourglass-scene'));
+    $('onboarding-scene').prepend(document.querySelector('.hourglass-scene'));
     $('onboarding-footer').append(document.querySelector('footer'));
   }
   $('settings-title').textContent=initial?'初期設定':'設定';
@@ -142,6 +168,7 @@ function openSettings(){
   settings.setAttribute('closedby',initial?'none':'any');
   if(initial)settings.show();
   else settings.showModal();
+  renderPreview();
 }
 settings.addEventListener('cancel',event=>{if(needsSetup())event.preventDefault();});
 genders.forEach(gender=>$(`gender-${gender}`).addEventListener('change',()=>{
@@ -152,7 +179,9 @@ genders.forEach(gender=>$(`gender-${gender}`).addEventListener('change',()=>{
     ? `平均寿命の${years}歳を入力しました。変更できます。`
     : '性別を選ぶと平均寿命を自動入力します。';
   $('form-error').textContent='';
+  renderPreview();
 }));
+$('lifespan').addEventListener('input',renderPreview);
 document.querySelectorAll('[data-settings]').forEach(button=>button.addEventListener('click',openSettings));
 $('share-x').addEventListener('click',render);
 document.querySelectorAll('dialog .close').forEach(button=>button.addEventListener('click',()=>button.closest('dialog').close()));
@@ -204,6 +233,6 @@ $('reset').addEventListener('click',()=>{
   try{localStorage.removeItem(KEY);}catch{}
   $('settings-status').textContent='保存したデータを削除しました';settings.close();render();openSettings();
 });
-render();setInterval(()=>{if(!document.hidden)render();},1000);
+render();setInterval(()=>{if(!document.hidden){render();renderPreview();}},1000);
 if(needsSetup())openSettings();else document.body.classList.remove('onboarding');
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)render();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){render();renderPreview();}});
