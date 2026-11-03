@@ -17,7 +17,7 @@ function app(profile,compute=calculate,Clock=Date){
   vm.runInNewContext(source,{
     document:{getElementById:element,querySelector:element,querySelectorAll(selector){return selector==='[data-settings]'?[element('header-settings')]:[];},body:element('body'),addEventListener(){}},
     localStorage:{getItem(){return saved;},setItem(key,value){saved=value;},removeItem(){saved=null;}},
-    calculate:compute,parseBirthday,AVERAGE_LIFESPAN,buildXShareURL,Event,URL,Intl,Date:Clock,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(fn){tick=fn;}
+    setupImageExport(){},calculate:compute,parseBirthday,AVERAGE_LIFESPAN,buildXShareURL,Event,URL,Intl,Date:Clock,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(fn){tick=fn;}
   });
   return {element,saved:()=>JSON.parse(saved),tick:()=>tick()};
 }

@@ -1,5 +1,6 @@
 import {calculate,parseBirthday,AVERAGE_LIFESPAN} from './time.mjs?v=ad-years-2';
 import {buildXShareURL} from './share.mjs';
+import {setupImageExport} from './image-card.mjs';
 const $ = id => document.getElementById(id);
 const KEY='inochi-hourglass-v1';
 const genders=new Set(['male','female']);
@@ -17,6 +18,7 @@ function render(){
     $('remaining-conversions').hidden=false;
     $('hero-title').textContent='人生の残り時間';
     $('share-x').hidden=true;
+    $('image-save').hidden=true;
     $('milestone-message').textContent='';
     $('days').textContent='—';
     $('upper-sand').setAttribute('y',130);
@@ -35,6 +37,7 @@ function render(){
   $('hero-title').textContent=reached?'想定寿命に達しました':'人生の残り時間';
   $('share-x').href=buildXShareURL(result.duration,document.querySelector('link[rel="canonical"]')?.href,{reached,birthdayToday});
   $('share-x').hidden=false;
+  $('image-save').hidden=false;
   $('countdown-years').textContent=nf.format(result.duration.years);
   $('countdown-months').textContent=nf.format(result.duration.months);
   $('days').textContent=nf.format(result.duration.days);
@@ -198,6 +201,13 @@ function enableLightDismiss(dialog,canClose=()=>true){
 }
 enableLightDismiss($('about'));
 enableLightDismiss(settings,()=>!needsSetup());
+setupImageExport(()=>{
+  if(!state.profile)return null;
+  const now=new Date();
+  const result=calculate(state.profile.birthday,state.profile.years,now);
+  if(!result)return null;
+  return {result,years:state.profile.years,glass:document.querySelector('.hourglass').outerHTML,birthdayToday:result.birth.getMonth()===now.getMonth()&&result.birth.getDate()===now.getDate()};
+});
 
 $('settings-form').addEventListener('submit',event=>{
   event.preventDefault();

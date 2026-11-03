@@ -32,6 +32,7 @@ class PreviewHandler(SimpleHTTPRequestHandler):
             text = path.read_text()
             if path.suffix == ".html":
                 text = re.sub(r'(src="[^"?]+\.mjs)(?:\?[^"]*)?"', lambda m: m[1] + "?dev=" + version + '"', text)
+                text = re.sub(r'(href="[^"?]+\.css)(?:\?[^" ]*)?"', lambda m: m[1] + "?dev=" + version + '"', text)
             else:
                 text = re.sub(r"(from ['\"]\./[^'\"?]+\.mjs)(?:\?[^'\"]*)?(['\"])", lambda m: m[1] + "?dev=" + version + m[2], text)
             data = text.encode()

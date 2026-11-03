@@ -25,7 +25,7 @@ function worker(origin='https://example.test/app/'){
 }
 
 test('offline app shell, navigation query and assets use the versioned cache',async()=>{
-  const w=worker();await w.event('install');assert.equal(w.requests.length,14);
+  const w=worker();await w.event('install');assert.equal(w.requests.length,15);
   assert.ok(w.requests.every(request=>request.cache==='reload'));
   assert.equal(w.skipped,0);
   w.online=false;

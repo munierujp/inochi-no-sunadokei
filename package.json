@@ -5,7 +5,7 @@
   "description": "命の砂時計",
   "scripts": {
     "dev": "node scripts/generate-pwa.mjs && python3 scripts/dev-server.py",
-    "check": "node --check dist/app.mjs && node --check dist/time.mjs && node --check dist/share.mjs && node --check dist/pwa.mjs && node --check dist/sw.js",
+    "check": "node --check dist/app.mjs && node --check dist/time.mjs && node --check dist/share.mjs && node --check dist/image-card.mjs && node --check dist/pwa.mjs && node --check dist/sw.js",
     "assets": "node scripts/generate-brand-assets.mjs",
     "pwa": "node scripts/generate-pwa.mjs",
     "build": "npm run assets && npm run pwa",

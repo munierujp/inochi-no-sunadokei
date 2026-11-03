@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const root=fileURLToPath(new URL('../',import.meta.url));
 const dist=path.join(root,'dist');
-const files=['index.html','style.css','app.mjs','time.mjs','share.mjs','pwa.mjs','site.webmanifest','favicon.svg','favicon.ico','apple-touch-icon.png','assets/logo-wordmark-a.png','assets/icon-192.png','assets/icon-512.png','assets/icon-maskable-512.png'];
+const files=['index.html','style.css','app.mjs','time.mjs','share.mjs','image-card.mjs','pwa.mjs','site.webmanifest','favicon.svg','favicon.ico','apple-touch-icon.png','assets/logo-wordmark-a.png','assets/icon-192.png','assets/icon-512.png','assets/icon-maskable-512.png'];
 const template=await readFile(path.join(root,'scripts/sw-template.js'),'utf8');
 const hash=createHash('sha256').update(template);
 for(const file of files){await access(path.join(dist,file));hash.update(file).update(await readFile(path.join(dist,file)));}
