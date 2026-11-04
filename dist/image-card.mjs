@@ -1,6 +1,7 @@
 const PUBLIC_URL='https://inochi-no-sunadokei.munieru.app/';
 const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[char]));
-export function buildCardSVG({glass,logo,result,years,birthdayToday=false}){
+export function buildCardSVG({glass,logo,result,years,birthdayToday=false,createdAt=new Date()}){
+  const createdDate=new Intl.DateTimeFormat('ja-JP',{year:'numeric',month:'long',day:'numeric'}).format(createdAt);
   const reached=result.remaining===0;
   const birth=new Intl.DateTimeFormat('ja-JP',{year:'numeric',month:'long',day:'numeric'}).format(result.birth);
   const basis=`${birth}生まれ・想定寿命 ${years}歳で計算`;
@@ -14,7 +15,7 @@ export function buildCardSVG({glass,logo,result,years,birthdayToday=false}){
   const message=reached
     ? '<text x="540" y="914" font-size="33">想定寿命を超えて、今日を迎えました。</text><text x="540" y="981" font-size="28">これからも健やかな日々が</text><text x="540" y="1028" font-size="28">続きますように。</text>'
     : `<text x="540" y="838" font-size="30">私の人生の残り時間</text><g font-family="Hiragino Mincho ProN, Yu Mincho, serif" font-size="74">${numbers}</g>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1080" height="1350" viewBox="0 0 1080 1350"><rect width="1080" height="1350" fill="#f5f2eb"/><image x="290" y="48" width="500" height="167" xlink:href="${escape(logo)}"/><circle cx="540" cy="492" r="266" fill="none" stroke="#ded9cb" opacity=".6"/><circle cx="540" cy="492" r="302" fill="none" stroke="#e1dccf" stroke-dasharray="3 6" opacity=".65"/>${hourglass}<g text-anchor="middle" fill="#343a33" font-family="Hiragino Sans, Yu Gothic, sans-serif">${birthdayToday?'<text x="540" y="790" font-size="26" fill="#9c6739">お誕生日おめでとうございます</text>':''}${message}<text x="540" y="1096" font-size="22" fill="#6d7266">${escape(basis)}</text><text x="540" y="1140" font-size="22" fill="#6d7266">設定した想定寿命に基づく表示です</text><path d="M120 1173H960" stroke="#deddd2"/><text x="540" y="1226" font-size="28" fill="#9c6739">#命の砂時計</text><text x="540" y="1278" font-size="24" fill="#6d7266">${PUBLIC_URL}</text></g></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1080" height="1350" viewBox="0 0 1080 1350"><rect width="1080" height="1350" fill="#f5f2eb"/><image x="290" y="48" width="500" height="167" xlink:href="${escape(logo)}"/><circle cx="540" cy="492" r="266" fill="none" stroke="#ded9cb" opacity=".6"/><circle cx="540" cy="492" r="302" fill="none" stroke="#e1dccf" stroke-dasharray="3 6" opacity=".65"/>${hourglass}<g text-anchor="middle" fill="#343a33" font-family="Hiragino Sans, Yu Gothic, sans-serif">${birthdayToday?'<text x="540" y="790" font-size="26" fill="#9c6739">お誕生日おめでとうございます</text>':''}${message}<text x="540" y="1096" font-size="22" fill="#6d7266">${escape(basis)}</text><text x="540" y="1132" font-size="22" fill="#6d7266">作成日：${escape(createdDate)}</text><text x="540" y="1168" font-size="22" fill="#6d7266">設定した想定寿命に基づく表示です</text><path d="M120 1195H960" stroke="#deddd2"/><text x="540" y="1246" font-size="28" fill="#9c6739">#命の砂時計</text><text x="540" y="1298" font-size="24" fill="#6d7266">${PUBLIC_URL}</text></g></svg>`;
 }
 function loadImage(url){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('画像を読み込めませんでした。'));img.src=url;});}
 async function logoData(){

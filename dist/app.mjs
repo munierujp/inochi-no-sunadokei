@@ -208,7 +208,7 @@ setupImageExport(()=>{
   const now=new Date();
   const result=calculate(state.profile.birthday,state.profile.years,now);
   if(!result)return null;
-  return {result,years:state.profile.years,glass:document.querySelector('.hourglass').outerHTML,birthdayToday:result.birth.getMonth()===now.getMonth()&&result.birth.getDate()===now.getDate()};
+  return {result,createdAt:now,years:state.profile.years,glass:document.querySelector('.hourglass').outerHTML,birthdayToday:result.birth.getMonth()===now.getMonth()&&result.birth.getDate()===now.getDate()};
 });
 
 $('settings-form').addEventListener('submit',event=>{

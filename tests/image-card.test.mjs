@@ -36,6 +36,13 @@ test('birthday card retains the countdown and adds its greeting',()=>{
  assert.ok(svg.includes('お誕生日おめでとう'));
 });
 
+test('creation date uses the snapshot local date for normal and reached cards',()=>{
+ for(const remaining of [100,0]){
+  const svg=buildCardSVG({glass,logo,years:81.35,result:{...result,remaining},createdAt:new Date(2026,10,4,23,59,59)});
+  assert.ok(svg.includes('作成日：2026年11月4日'));
+ }
+});
+
 test('image export downloads directly, prevents duplicate saves and releases its URL',async()=>{
  const source=(await readFile(new URL('../dist/image-card.mjs',import.meta.url),'utf8')).replace(/^export /gm,'');
  const trigger={events:{},disabled:false,addEventListener(type,fn){this.events[type]=fn;},setAttribute(name,value){this[name]=value;}};
