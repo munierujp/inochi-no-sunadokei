@@ -196,5 +196,4 @@ footer { justify-content: center; }
 
 #settings-status:empty { display: none; }
 
-#image-status:empty { display: none; }
 .share-button:disabled { opacity: .6; cursor: wait; }
