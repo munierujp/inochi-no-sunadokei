@@ -36,32 +36,37 @@ export async function createCardPNG(snapshot){
     return await new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('画像を作成できませんでした。')),'image/png'));
   }finally{URL.revokeObjectURL(url);}
 }
+export function supportsImageSharing(){
+  try{
+    return typeof navigator!=='undefined'&&typeof navigator.share==='function'&&typeof navigator.canShare==='function'&&typeof File==='function'&&navigator.canShare({files:[new File([],'inochi-no-sunadokei.png',{type:'image/png'})]});
+  }catch{return false;}
+}
 export function setupImageExport(getSnapshot,{create=createCardPNG}={}){
-  const trigger=document.getElementById('image-save');
+  const saveButton=document.getElementById('image-save');
+  const shareButton=document.getElementById('image-share');
   const status=document.getElementById('image-status');
-  const originalLabel=trigger.textContent;
   let prepared=null;
   let saving=false;
-  trigger.addEventListener('click',async()=>{
+  async function exportImage(sharing){
     if(saving)return;
     const snapshot=getSnapshot();if(!snapshot)return;
     const key=JSON.stringify([snapshot.result?.birth,snapshot.years]);
-    const retry=prepared?.key===key;
+    const retry=sharing&&prepared?.key===key;
     if(!retry)prepared=null;
-    saving=true;trigger.disabled=true;trigger.setAttribute('aria-busy','true');
+    const trigger=sharing?shareButton:saveButton;
+    saving=true;saveButton.disabled=true;shareButton.disabled=true;trigger.setAttribute('aria-busy','true');
     status.textContent='画像を作成しています…';
     let url;
     try{
       const blob=retry?prepared.blob:await create(snapshot);
-      const sharing=typeof navigator!=='undefined'&&typeof navigator.share==='function'&&typeof navigator.canShare==='function'&&typeof File==='function';
       const file=sharing?(retry?prepared.file:new File([blob],'inochi-no-sunadokei.png',{type:'image/png'})):null;
       let canShare=false;
       try{canShare=sharing&&navigator.canShare({files:[file]});}catch{}
       if(canShare){
         const requestRetry=()=>{
           prepared={blob,file,key};
-          trigger.textContent='画像を共有';
-          status.textContent='画像を用意しました。「画像を共有」を押してください。';
+          shareButton.textContent='もう一度押して共有';
+          status.textContent='画像を用意しました。「もう一度押して共有」を押してください。';
         };
         // Image generation can outlast the browser's user-activation window.
         if(!retry&&navigator.userActivation?.isActive===false){requestRetry();return;}
@@ -71,9 +76,10 @@ export function setupImageExport(getSnapshot,{create=createCardPNG}={}){
         }catch(error){
           if(error.name==='AbortError'){prepared=null;status.textContent='';return;}
           if(error.name==='NotAllowedError'&&!retry){requestRetry();return;}
-          // If native sharing fails, keep the existing download path available.
+          throw error;
         }
       }
+      if(sharing)throw new Error('画像を共有できません。「画像を保存」をお試しください。');
       prepared=null;
       url=URL.createObjectURL(blob);
       const link=document.createElement('a');
@@ -81,12 +87,14 @@ export function setupImageExport(getSnapshot,{create=createCardPNG}={}){
       document.body.append(link);
       try{link.click();}finally{link.remove();}
       status.textContent='';
-    }catch(error){status.textContent=error.message||'画像を保存できませんでした。もう一度お試しください。';}
+    }catch(error){prepared=null;status.textContent=sharing?'画像を共有できません。「画像を保存」をお試しください。':error.message||'画像を保存できませんでした。もう一度お試しください。';}
     finally{
       // Keep the blob available while the browser starts its download.
       if(url)setTimeout(()=>URL.revokeObjectURL(url),60000);
-      saving=false;trigger.disabled=false;trigger.setAttribute('aria-busy','false');
-      if(!prepared)trigger.textContent=originalLabel;
+      saving=false;saveButton.disabled=false;shareButton.disabled=false;trigger.setAttribute('aria-busy','false');
+      if(!prepared)shareButton.textContent='画像を共有';
     }
-  });
+  }
+  saveButton.addEventListener('click',()=>exportImage(false));
+  shareButton.addEventListener('click',()=>exportImage(true));
 }

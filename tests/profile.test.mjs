@@ -4,6 +4,7 @@ import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 import {calculate,parseBirthday,AVERAGE_LIFESPAN} from '../dist/time.mjs';
 import {buildXShareURL} from '../dist/share.mjs';
+import {supportsImageSharing} from '../dist/image-card.mjs';
 
 const source=(await readFile(new URL('../dist/app.mjs',import.meta.url),'utf8')).replace(/^import[^\n]+\n/gm,'');
 function app(profile,compute=calculate,Clock=Date){
@@ -17,7 +18,7 @@ function app(profile,compute=calculate,Clock=Date){
   vm.runInNewContext(source,{
     document:{getElementById:element,querySelector:element,querySelectorAll(selector){return selector==='[data-settings]'?[element('header-settings')]:[];},body:element('body'),addEventListener(){}},
     localStorage:{getItem(){return saved;},setItem(key,value){saved=value;},removeItem(){saved=null;}},
-    setupImageExport(){},calculate:compute,parseBirthday,AVERAGE_LIFESPAN,buildXShareURL,Event,URL,Intl,Date:Clock,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(fn){tick=fn;}
+    setupImageExport(){},supportsImageSharing,calculate:compute,parseBirthday,AVERAGE_LIFESPAN,buildXShareURL,Event,URL,Intl,Date:Clock,Set,Number,Math,JSON,String,confirm:()=>true,setInterval(fn){tick=fn;}
   });
   return {element,saved:()=>JSON.parse(saved),tick:()=>tick()};
 }

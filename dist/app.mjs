@@ -1,6 +1,6 @@
 import {calculate,parseBirthday,AVERAGE_LIFESPAN} from './time.mjs?v=ad-years-2';
 import {buildXShareURL} from './share.mjs';
-import {setupImageExport} from './image-card.mjs';
+import {setupImageExport,supportsImageSharing} from './image-card.mjs';
 const $ = id => document.getElementById(id);
 const KEY='inochi-hourglass-v1';
 const genders=new Set(['male','female','none']);
@@ -19,6 +19,7 @@ function render(){
     $('hero-title').textContent='人生の残り時間';
     $('share-x').hidden=true;
     $('image-save').hidden=true;
+    $('image-share').hidden=true;
     $('milestone-message').textContent='';
     $('days').textContent='—';
     $('upper-sand').setAttribute('y',130);
@@ -38,6 +39,7 @@ function render(){
   $('share-x').href=buildXShareURL(result.duration,document.querySelector('link[rel="canonical"]')?.href,{reached,birthdayToday});
   $('share-x').hidden=false;
   $('image-save').hidden=false;
+  $('image-share').hidden=!supportsImageSharing();
   $('countdown-years').textContent=nf.format(result.duration.years);
   $('countdown-months').textContent=nf.format(result.duration.months);
   $('days').textContent=nf.format(result.duration.days);

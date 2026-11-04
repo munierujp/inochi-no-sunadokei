@@ -40,10 +40,11 @@ test('image export downloads directly, prevents duplicate saves and releases its
  const source=(await readFile(new URL('../dist/image-card.mjs',import.meta.url),'utf8')).replace(/^export /gm,'');
  const trigger={events:{},disabled:false,addEventListener(type,fn){this.events[type]=fn;},setAttribute(name,value){this[name]=value;}};
  const status={textContent:''},revoked=[],timers=[];
+ const shareButton={addEventListener(){}};
  let clicks=0,removed=0,complete,calls=0;
  const link={click(){clicks++;},remove(){removed++;}};
  const setup=vm.runInNewContext(source+';setupImageExport',{
-  document:{getElementById(id){assert.ok(['image-save','image-status'].includes(id));return id==='image-save'?trigger:status;},createElement(tag){assert.equal(tag,'a');return link;},body:{append(value){assert.equal(value,link);}}},
+  document:{getElementById(id){assert.ok(['image-save','image-share','image-status'].includes(id));return id==='image-save'?trigger:id==='image-share'?shareButton:status;},createElement(tag){assert.equal(tag,'a');return link;},body:{append(value){assert.equal(value,link);}}},
   URL:{createObjectURL(){return 'blob:test';},revokeObjectURL(url){revoked.push(url);}},
   setTimeout(fn,delay){assert.equal(delay,60000);timers.push(fn);}
  });
@@ -58,8 +59,8 @@ test('image export downloads directly, prevents duplicate saves and releases its
 });
 test('image generation failure remains retryable and shows an error',async()=>{
  const source=(await readFile(new URL('../dist/image-card.mjs',import.meta.url),'utf8')).replace(/^export /gm,'');
- const trigger={events:{},addEventListener(type,fn){this.events[type]=fn;},setAttribute(){}},status={};
- const setup=vm.runInNewContext(source+';setupImageExport',{document:{getElementById(id){return id==='image-save'?trigger:status;}}});
+ const trigger={events:{},addEventListener(type,fn){this.events[type]=fn;},setAttribute(){}},status={},shareButton={addEventListener(){}};
+ const setup=vm.runInNewContext(source+';setupImageExport',{document:{getElementById(id){return id==='image-save'?trigger:id==='image-share'?shareButton:status;}}});
  setup(()=>({}),{create:async()=>{throw Error('画像を作成できませんでした。');}});
  await trigger.events.click();
  assert.equal(status.textContent,'画像を作成できませんでした。');assert.equal(trigger.disabled,false);
@@ -67,16 +68,17 @@ test('image generation failure remains retryable and shows an error',async()=>{
 
 async function sharingApp(nav){
  const source=(await readFile(new URL('../dist/image-card.mjs',import.meta.url),'utf8')).replace(/^export /gm,'');
- const trigger={textContent:'画像を保存',events:{},addEventListener(type,fn){this.events[type]=fn;},setAttribute(){}};
+ const button=textContent=>({textContent,events:{},addEventListener(type,fn){this.events[type]=fn;},setAttribute(){}});
+ const trigger=button('画像を共有'),saveButton=button('画像を保存');
  const status={textContent:''};
  let downloads=0,created=0;
  const setup=vm.runInNewContext(source+';setupImageExport',{
-  document:{getElementById(id){return id==='image-save'?trigger:status;},createElement(){return {click(){downloads++;},remove(){}};},body:{append(){}}},
+  document:{getElementById(id){return id==='image-save'?saveButton:id==='image-share'?trigger:status;},createElement(){return {click(){downloads++;},remove(){}};},body:{append(){}}},
   navigator:nav,File,URL:{createObjectURL(){return 'blob:test';},revokeObjectURL(){}},setTimeout(){}
  });
  let snapshot={years:80};
  setup(()=>snapshot,{create:async()=>{created++;return new Blob(['png'],{type:'image/png'});}});
- return {trigger,status,click:()=>trigger.events.click(),downloads:()=>downloads,created:()=>created,setSnapshot(value){snapshot=value;}};
+ return {trigger,saveButton,status,supported:()=>vm.runInNewContext(source+';supportsImageSharing()', {navigator:nav,File}),click:()=>trigger.events.click(),save:()=>saveButton.events.click(),downloads:()=>downloads,created:()=>created,setSnapshot(value){snapshot=value;}};
 }
 
 test('supported image sharing passes a PNG file to the native menu without downloading',async()=>{
@@ -90,10 +92,20 @@ test('supported image sharing passes a PNG file to the native menu without downl
  assert.equal(current.trigger.disabled,false);
 });
 
-test('text-only sharing or a failed capability check falls back to downloading',async()=>{
+test('save always downloads even when native image sharing is supported',async()=>{
+ const current=await sharingApp({canShare:()=>true,share(){assert.fail('save must not open native sharing');}});
+ assert.equal(current.supported(),true);
+ await current.save();
+ assert.equal(current.downloads(),1);
+ assert.equal(current.trigger.disabled,false);
+ assert.equal(current.saveButton.disabled,false);
+});
+
+test('unsupported image sharing hides the option and saving remains available',async()=>{
  for(const canShare of [()=>false,()=>{throw Error('unavailable');}]){
   const current=await sharingApp({canShare,share(){assert.fail('must not share unsupported files');}});
-  await current.click();assert.equal(current.downloads(),1);
+  assert.equal(current.supported(),false);
+  await current.save();assert.equal(current.downloads(),1);
  }
 });
 
@@ -102,7 +114,7 @@ test('canceling native sharing does not download or show an error',async()=>{
  await current.click();
  assert.equal(current.downloads(),0);
  assert.equal(current.status.textContent,'');
- assert.equal(current.trigger.textContent,'画像を保存');
+ assert.equal(current.trigger.textContent,'画像を共有');
 });
 
 test('expired user activation asks for another tap and reuses the generated image',async()=>{
@@ -111,26 +123,28 @@ test('expired user activation asks for another tap and reuses the generated imag
  const current=await sharingApp(nav);
  await current.click();
  assert.equal(shares,0);assert.equal(current.downloads(),0);
- assert.equal(current.trigger.textContent,'画像を共有');
+ assert.equal(current.trigger.textContent,'もう一度押して共有');
  assert.match(current.status.textContent,/画像を用意/);
  nav.userActivation.isActive=true;
  await current.click();
  assert.equal(shares,1);assert.equal(current.created(),1);
- assert.equal(current.trigger.textContent,'画像を保存');
+ assert.equal(current.trigger.textContent,'画像を共有');
 });
 
-test('blocked sharing retries on a fresh tap and falls back if it is still blocked',async()=>{
+test('blocked sharing retries and leaves download as an explicit choice',async()=>{
  let shares=0;
  const current=await sharingApp({canShare:()=>true,async share(){shares++;throw Object.assign(Error('blocked'),{name:'NotAllowedError'});}});
  await current.click();assert.equal(current.downloads(),0);
- await current.click();assert.equal(current.downloads(),1);
+ await current.click();assert.equal(current.downloads(),0);
+ assert.match(current.status.textContent,/画像を保存/);
  assert.equal(shares,2);assert.equal(current.created(),1);
- assert.equal(current.trigger.textContent,'画像を保存');
+ assert.equal(current.trigger.textContent,'画像を共有');
 });
 
-test('other sharing failures fall back to a download',async()=>{
+test('other sharing failures do not start a download',async()=>{
  const current=await sharingApp({canShare:()=>true,async share(){throw Object.assign(Error('failed'),{name:'DataError'});}});
- await current.click();assert.equal(current.downloads(),1);
+ await current.click();assert.equal(current.downloads(),0);
+ await current.save();assert.equal(current.downloads(),1);
 });
 
 test('a changed profile discards the image prepared for a sharing retry',async()=>{
