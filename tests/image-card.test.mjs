@@ -64,3 +64,82 @@ test('image generation failure remains retryable and shows an error',async()=>{
  await trigger.events.click();
  assert.equal(status.textContent,'画像を作成できませんでした。');assert.equal(trigger.disabled,false);
 });
+
+async function sharingApp(nav){
+ const source=(await readFile(new URL('../dist/image-card.mjs',import.meta.url),'utf8')).replace(/^export /gm,'');
+ const trigger={textContent:'画像を保存',events:{},addEventListener(type,fn){this.events[type]=fn;},setAttribute(){}};
+ const status={textContent:''};
+ let downloads=0,created=0;
+ const setup=vm.runInNewContext(source+';setupImageExport',{
+  document:{getElementById(id){return id==='image-save'?trigger:status;},createElement(){return {click(){downloads++;},remove(){}};},body:{append(){}}},
+  navigator:nav,File,URL:{createObjectURL(){return 'blob:test';},revokeObjectURL(){}},setTimeout(){}
+ });
+ let snapshot={years:80};
+ setup(()=>snapshot,{create:async()=>{created++;return new Blob(['png'],{type:'image/png'});}});
+ return {trigger,status,click:()=>trigger.events.click(),downloads:()=>downloads,created:()=>created,setSnapshot(value){snapshot=value;}};
+}
+
+test('supported image sharing passes a PNG file to the native menu without downloading',async()=>{
+ let shared;
+ const current=await sharingApp({canShare({files}){return files.length===1&&files[0].type==='image/png';},async share(data){shared=data;}});
+ await current.click();
+ assert.equal(shared.files[0].name,'inochi-no-sunadokei.png');
+ assert.equal(await shared.files[0].text(),'png');
+ assert.equal(current.downloads(),0);
+ assert.equal(current.status.textContent,'');
+ assert.equal(current.trigger.disabled,false);
+});
+
+test('text-only sharing or a failed capability check falls back to downloading',async()=>{
+ for(const canShare of [()=>false,()=>{throw Error('unavailable');}]){
+  const current=await sharingApp({canShare,share(){assert.fail('must not share unsupported files');}});
+  await current.click();assert.equal(current.downloads(),1);
+ }
+});
+
+test('canceling native sharing does not download or show an error',async()=>{
+ const current=await sharingApp({canShare:()=>true,async share(){throw Object.assign(Error('canceled'),{name:'AbortError'});}});
+ await current.click();
+ assert.equal(current.downloads(),0);
+ assert.equal(current.status.textContent,'');
+ assert.equal(current.trigger.textContent,'画像を保存');
+});
+
+test('expired user activation asks for another tap and reuses the generated image',async()=>{
+ let shares=0;
+ const nav={userActivation:{isActive:false},canShare:()=>true,async share(){shares++;}};
+ const current=await sharingApp(nav);
+ await current.click();
+ assert.equal(shares,0);assert.equal(current.downloads(),0);
+ assert.equal(current.trigger.textContent,'画像を共有');
+ assert.match(current.status.textContent,/画像を用意/);
+ nav.userActivation.isActive=true;
+ await current.click();
+ assert.equal(shares,1);assert.equal(current.created(),1);
+ assert.equal(current.trigger.textContent,'画像を保存');
+});
+
+test('blocked sharing retries on a fresh tap and falls back if it is still blocked',async()=>{
+ let shares=0;
+ const current=await sharingApp({canShare:()=>true,async share(){shares++;throw Object.assign(Error('blocked'),{name:'NotAllowedError'});}});
+ await current.click();assert.equal(current.downloads(),0);
+ await current.click();assert.equal(current.downloads(),1);
+ assert.equal(shares,2);assert.equal(current.created(),1);
+ assert.equal(current.trigger.textContent,'画像を保存');
+});
+
+test('other sharing failures fall back to a download',async()=>{
+ const current=await sharingApp({canShare:()=>true,async share(){throw Object.assign(Error('failed'),{name:'DataError'});}});
+ await current.click();assert.equal(current.downloads(),1);
+});
+
+test('a changed profile discards the image prepared for a sharing retry',async()=>{
+ let shared;
+ const nav={userActivation:{isActive:false},canShare:()=>true,async share(data){shared=data;}};
+ const current=await sharingApp(nav);
+ await current.click();
+ current.setSnapshot({years:90});nav.userActivation.isActive=true;
+ await current.click();
+ assert.equal(current.created(),2);
+ assert.ok(shared);assert.equal(current.downloads(),0);
+});

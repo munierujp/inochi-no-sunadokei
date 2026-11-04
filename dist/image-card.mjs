@@ -39,15 +39,42 @@ export async function createCardPNG(snapshot){
 export function setupImageExport(getSnapshot,{create=createCardPNG}={}){
   const trigger=document.getElementById('image-save');
   const status=document.getElementById('image-status');
+  const originalLabel=trigger.textContent;
+  let prepared=null;
   let saving=false;
   trigger.addEventListener('click',async()=>{
     if(saving)return;
     const snapshot=getSnapshot();if(!snapshot)return;
+    const key=JSON.stringify([snapshot.result?.birth,snapshot.years]);
+    const retry=prepared?.key===key;
+    if(!retry)prepared=null;
     saving=true;trigger.disabled=true;trigger.setAttribute('aria-busy','true');
     status.textContent='画像を作成しています…';
     let url;
     try{
-      const blob=await create(snapshot);
+      const blob=retry?prepared.blob:await create(snapshot);
+      const sharing=typeof navigator!=='undefined'&&typeof navigator.share==='function'&&typeof navigator.canShare==='function'&&typeof File==='function';
+      const file=sharing?(retry?prepared.file:new File([blob],'inochi-no-sunadokei.png',{type:'image/png'})):null;
+      let canShare=false;
+      try{canShare=sharing&&navigator.canShare({files:[file]});}catch{}
+      if(canShare){
+        const requestRetry=()=>{
+          prepared={blob,file,key};
+          trigger.textContent='画像を共有';
+          status.textContent='画像を用意しました。「画像を共有」を押してください。';
+        };
+        // Image generation can outlast the browser's user-activation window.
+        if(!retry&&navigator.userActivation?.isActive===false){requestRetry();return;}
+        try{
+          await navigator.share({files:[file]});
+          prepared=null;status.textContent='';return;
+        }catch(error){
+          if(error.name==='AbortError'){prepared=null;status.textContent='';return;}
+          if(error.name==='NotAllowedError'&&!retry){requestRetry();return;}
+          // If native sharing fails, keep the existing download path available.
+        }
+      }
+      prepared=null;
       url=URL.createObjectURL(blob);
       const link=document.createElement('a');
       link.href=url;link.download='inochi-no-sunadokei.png';
@@ -59,6 +86,7 @@ export function setupImageExport(getSnapshot,{create=createCardPNG}={}){
       // Keep the blob available while the browser starts its download.
       if(url)setTimeout(()=>URL.revokeObjectURL(url),60000);
       saving=false;trigger.disabled=false;trigger.setAttribute('aria-busy','false');
+      if(!prepared)trigger.textContent=originalLabel;
     }
   });
 }
